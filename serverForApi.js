@@ -181,7 +181,6 @@ function aggregateRequests(urlPath) {
   //This was a test for one space
   //let requestChop = getresultHttp(optionsChop, urlPath, http);//Promise
   //return Promise.all([requestChop]);
-  return Promise.all([requestChop, requestPedscommons, requestTreehouse, requestStjude]);
 }
 async function aggregateResults(urlPath){
   //console.log('aggregateResults started:', urlPath);
