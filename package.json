@@ -1,0 +1,44 @@
+{
+  "name": "ccdi-federation-api-aggregation",
+  "version": "0.1.0",
+  "description": "CCDI Federation platform API aggregation level implementation.",
+  "main": "serverForApi.js",
+  "scripts": {
+    "test": "echo \"CCDI Data Federation API tests TBD\" && exit 1",
+    "lint": "eslint ./app/**/*.* --ext .js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CBIIT/ccdi-federation-api-aggregation.git"
+  },
+  "keywords": [
+    "CBIIT",
+    "CCDI",
+    "FNLCR",
+    "Data",
+    "Federation",
+    "API",
+    "REST",
+    "aggregation"
+  ],
+  "author": "CBIIT",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CBIIT/ccdi-federation-api-aggregation/issues"
+  },
+  "homepage": "https://github.com/CBIIT/ccdi-federation-api-aggregation#readme",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "https": "^1.0.0",
+    "process": "^0.11.10",
+    "psl": "^1.9.0",
+    "require": "^2.4.20"
+  },
+  "devDependencies": {
+    "eslint": "^8.55.0",
+    "eslint-plugin-react": "^7.33.2"
+  }
+}
