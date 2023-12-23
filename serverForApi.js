@@ -89,7 +89,11 @@ const server = http.createServer((req, res) => {
   function responseLength(strResponse) {//expects a string parameter
     return Buffer.byteLength(strResponse, 'utf8') +'';
   }
-  if (urlPath == "/welcome") {
+  if (!urlPath || (urlPath.length == 0) || (urlPath === '/')) {
+    res.writeHead(200, {"Content-Type": "text/plain", "Content-Length":"37"});
+    res.end('CCDI Federation API Aggregation Layer');
+  }
+  else if (urlPath == "/welcome") {
     res.writeHead(200, {"Content-Type": "text/plain", "Content-Length":"42"});
     res.end('Welcome to CCDI Federation API Aggregation');
   } else if (isTreehouseUrl&&(optionsTreehouse.host !== undefinedHost)) {
@@ -97,7 +101,7 @@ const server = http.createServer((req, res) => {
       getresultHttp(optionsTreehouse, urlPath, https).then(data => {
       res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(data)});
       res.end(data);
-    });
+    });//TODO check for valid URL Path
   } else if (isPedscommonsUrl&&(optionsPedscommons.host !== undefinedHost)) {
     console.log("Pedscommons request: ", urlPath);
     getresultHttp(optionsPedscommons, urlPath, https).then(data => {
@@ -106,7 +110,7 @@ const server = http.createServer((req, res) => {
     });
   } else if (isStjudeUrl&&(optionsStjude.host !== undefinedHost)) {
     console.log("Stjude request: ", urlPath);
-    getresultHttp(optionsPedscommons, urlPath, https).then(data => {
+    getresultHttp(optionsStjude, urlPath, https).then(data => {
       res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(data)});
       res.end(data);
     });
