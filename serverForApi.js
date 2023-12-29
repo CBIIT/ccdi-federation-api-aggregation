@@ -109,20 +109,24 @@ const server = http.createServer((req, res) => {
       res.end(data);
     });
   } else if (isStjudeUrl&&(optionsStjude.host !== undefinedHost)) {
-    console.log("Stjude request: ", urlPath);
-    getresultHttp(optionsStjude, urlPath, https).then(data => {
+      let urlTemp = urlPath; //TODO remove when the server is fixed
+      if (urlPath.startsWith("/api/v0")) {
+        urlTemp = urlPath.slice(7);
+      }
+      console.log("Stjude request: ", urlTemp);
+      getresultHttp(optionsStjude, urlTemp, https).then(data => {
       res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(data)});
       res.end(data);
     });
   } else if (isKidsFirstUrl &&(optionsChop.host !== undefinedHost)) {
-    console.log("KidsFirst request: ", urlPath);
-    getresultHttp(optionsChop, urlPath, http).then(data => {
+      console.log("KidsFirst request: ", urlPath);
+      getresultHttp(optionsChop, urlPath, http).then(data => {
       res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(data)});
       res.end(data);
     });
   }else {//try to aggregate
-    console.log("aggregate results request: ", urlPath);
-    aggregateResults(urlPath).then(data => {
+      console.log("aggregate results request: ", urlPath);
+      aggregateResults(urlPath).then(data => {
       let strRes = urlUtils.concatArray(data);
       res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(strRes)});
       res.end(strRes);
@@ -178,8 +182,13 @@ function aggregateRequests(urlPath) {
     toAggregate.push(getresultHttp(optionsPedscommons, urlPath, https));
   if (optionsTreehouse.host !== undefinedHost)
     toAggregate.push(getresultHttp(optionsTreehouse, urlPath, https));
-  if (optionsStjude.host !== undefinedHost)
-    toAggregate.push(getresultHttp(optionsStjude, urlPath, https));
+  if (optionsStjude.host !== undefinedHost) {
+    let urlTemp = urlPath;//TODO remove when the server is fixed
+    if (urlPath.startsWith("/api/v0")) {
+      urlTemp = urlPath.slice(7);
+    }
+    toAggregate.push(getresultHttp(optionsStjude, urlTemp, https));
+  }
   
   return Promise.all(toAggregate);
   //This was a test for one space
