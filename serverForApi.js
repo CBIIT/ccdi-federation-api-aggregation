@@ -12,6 +12,8 @@ const caTreehouse = [fs.readFileSync("./treehouse-cer.pem")];
 const caPedscommons = [fs.readFileSync("./ccdifederation-pedscommons-org.pem")];
 const caStjude = [fs.readFileSync("./ccdi-stjude-cloud.pem")];
 
+var SERVER_HOST = "localhost" //"0.0.0.0" for container from docker
+
 var undefinedHost = "undefinedHost";
 var optionsTreehouse = {
   host: undefinedHost,
@@ -60,6 +62,10 @@ var optionsStjude = {
 // as comma-separated domains without protocol: www.server1.com, abc.server2.com, vfr.frh.server3.com
 // expected are hosts from registered servers only
 var apiHosts = process.env.federation_apis.split(",");
+var serverHost = process.env.server_host;
+if (serverHost) {
+  SERVER_HOST = serverHost;
+}
 console.log(apiHosts ); //TODO remove log
 
 for(var i = 0; i < apiHosts.length;i++){
@@ -202,6 +208,8 @@ async function aggregateResults(urlPath){
   return res = await aggregateRequests(urlPath);
 }
 
-server.listen(3000, "localhost", () => {
-  console.log("Listening for request");
+server.listen(3000, SERVER_HOST, () => {
+  console.log("Listening for request on port 3000");
+  console.log('Port :' + server.address().port);
+  console.log('Server:' + server.address().address);
 });

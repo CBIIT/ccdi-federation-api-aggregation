@@ -1,0 +1,13 @@
+# Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+services:
+  server:
+    container_name: ccdi_federation_api
+    build:
+      context: .
+    environment:
+      NODE_ENV: production
+      federation_apis: ${federation_apis}
+      server_host: "0.0.0.0"
+    ports:
+      - "3000:3000"
