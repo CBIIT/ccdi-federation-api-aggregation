@@ -182,18 +182,19 @@ function getresultHttp(options, urlPath, proto) {
 function aggregateRequests(urlPath) {
   let toAggregate = [];
   //collect Promises from getresultHttp
-  if (optionsChop.host !== undefinedHost)
-    toAggregate.push(getresultHttp(optionsChop, urlPath, http));
+  if (optionsChop.host !== undefinedHost) {
+    let urlTemp = urlPath;//TODO remove when the server is fixed
+    if (urlPath.startsWith("/api/v0/")) {
+      urlTemp = urlPath.replace("/api/v0/", "/chop-ccdi-api-dev/api/");
+    }   
+    toAggregate.push(getresultHttp(optionsChop, urlTemp, http));
+  } 
   if (optionsPedscommons.host !== undefinedHost)
     toAggregate.push(getresultHttp(optionsPedscommons, urlPath, https));
   if (optionsTreehouse.host !== undefinedHost)
     toAggregate.push(getresultHttp(optionsTreehouse, urlPath, https));
   if (optionsStjude.host !== undefinedHost) {
-    let urlTemp = urlPath;//TODO remove when the server is fixed
-    if (urlPath.startsWith("/api/v0")) {
-      urlTemp = urlPath.slice(7);
-    }
-    toAggregate.push(getresultHttp(optionsStjude, urlTemp, https));
+    toAggregate.push(getresultHttp(optionsStjude, urlPath, https));
   }
   
   return Promise.all(toAggregate);
