@@ -109,24 +109,24 @@ const server = http.createServer((req, res) => {
       res.end(data);
     });//TODO check for valid URL Path
   } else if (isPedscommonsUrl&&(optionsPedscommons.host !== undefinedHost)) {
-    console.log("Pedscommons request: ", urlPath);
-    getresultHttp(optionsPedscommons, urlPath, https).then(data => {
+      console.log("Pedscommons request: ", urlPath);
+      getresultHttp(optionsPedscommons, urlPath, https).then(data => {
       res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(data)});
       res.end(data);
     });
   } else if (isStjudeUrl&&(optionsStjude.host !== undefinedHost)) {
-      let urlTemp = urlPath; //TODO remove when the server is fixed
-      if (urlPath.startsWith("/api/v0")) {
-        urlTemp = urlPath.slice(7);
-      }
-      console.log("Stjude request: ", urlTemp);
-      getresultHttp(optionsStjude, urlTemp, https).then(data => {
+      console.log("Stjude request: ", urlPath);
+      getresultHttp(optionsStjude, urlPath, https).then(data => {
       res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(data)});
       res.end(data);
     });
   } else if (isKidsFirstUrl &&(optionsChop.host !== undefinedHost)) {
-      console.log("KidsFirst request: ", urlPath);
-      getresultHttp(optionsChop, urlPath, http).then(data => {
+      let urlTemp = urlPath;//TODO remove when the server is fixed
+      if (urlPath.startsWith("/api/v0/")) {
+        urlTemp = urlPath.replace("/api/v0/", "/chop-ccdi-api-dev/api/");
+      }
+      console.log("KidsFirst request: ", urlTemp);
+      getresultHttp(optionsChop, urlTemp, http).then(data => {
       res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(data)});
       res.end(data);
     });
