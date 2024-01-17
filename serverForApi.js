@@ -85,7 +85,7 @@ var contentTypeJson = "application/json; charset=utf-8";
 const server = http.createServer((req, res) => {
   const urlPath = req.url;
   console.log('Request with urlPath: ', urlPath);
-  let isTreehouseUrl = urlPath.indexOf('treehouse') > 0;
+  let isTreehouseUrl = (urlPath.indexOf('ucsc-treehouse') > 0) || (urlPath.indexOf('ucsc-xena') > 0);
   let isPedscommonsUrl = urlPath.indexOf('pedscommons') > 0;
   let isKidsFirstUrl = regKidsFirst.test(urlPath);
   let isStjudeUrl = urlPath.indexOf('stjude') > 0; //StJude not implemented
