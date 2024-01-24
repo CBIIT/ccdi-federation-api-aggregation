@@ -1,3 +1,8 @@
+const startApiUrl = "/api/v0/";
+const arrayEndpoints = ["subject", "sample", "file", "info", "metadata"];
+// TODO read above endpoints from YAML
+
+const validEndpointStart = arrayEndpoints.map(i => startApiUrl + i);
 module.exports = {
     getDomain: function (strHostName) {
 
@@ -23,5 +28,18 @@ module.exports = {
        res.forEach(function(x) {s+= prefix+x; prefix= ',';});
        s+= ']';
        return s;
+    },
+    validEndpoint: function (str) {
+        // returns true if str starts with "/api/v0/<endpoint>"
+        let resValid = false;
+        console.log(arrayEndpoints.join("|"));
+        if (str != null) {
+            if (str.startsWith(startApiUrl)) {
+                if (new RegExp(validEndpointStart.join("|")).test(str)) {
+                    resValid = true;
+                }
+            }
+        }
+        return resValid;
     }
 };

@@ -102,7 +102,12 @@ const server = http.createServer((req, res) => {
   else if (urlPath == "/welcome") {
     res.writeHead(200, {"Content-Type": "text/plain", "Content-Length":"42"});
     res.end('Welcome to CCDI Federation API Aggregation');
-  } else if (isTreehouseUrl&&(optionsTreehouse.host !== undefinedHost)) {
+  }   
+  else if (! urlUtils.validEndpoint(urlPath)) {
+    res.writeHead(404, {"Content-Type": "text/plain", "Content-Length":"9"});
+    res.end('Not Found');
+  }
+  else if (isTreehouseUrl&&(optionsTreehouse.host !== undefinedHost)) {
       console.log("Treehouse request: ", urlPath);
       getresultHttp(optionsTreehouse, urlPath, https).then(data => {
       res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(data)});
