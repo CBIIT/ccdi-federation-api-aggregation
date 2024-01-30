@@ -1,5 +1,6 @@
 const startApiUrl = "/api/v0/";
 const arrayEndpoints = ["subject", "sample", "file", "info", "metadata"];
+const mapSources = new Map([["pedscommons", "UChicago"], ["stjude", "StJude"], ["ucsc", "UCSC"], ["chop", "CHOP"]]);
 // TODO read above endpoints from YAML
 
 const validEndpointStart = arrayEndpoints.map(i => startApiUrl + i);
@@ -41,5 +42,31 @@ module.exports = {
             }
         }
         return resValid;
+    },
+    addSourceAttr: function (strJson, options) {
+        strJson = strJson.trimStart();
+        //aggregation adds "source" attribute to all entries which are not arrays
+        //source values are searched based on domains
+        if (strJson.startsWith ('{')) {
+            //add source to counts and summaries
+            let strHost = options.host;
+            let strSource = "";
+            for (var entry of mapSources.entries()) {
+                if (strHost.includes(entry[0])) {
+                    strSource = entry[1];
+                    break;
+                }
+            }
+            if (strSource.length > 0) {
+                //resultJson["source"] = strSource;
+                return ('{"source":"' + strSource + '",\n ' + strJson.slice(1));
+            }
+            else 
+                return strJson;
+        }
+        else {
+            console.log("addSourceAttr", typeof(resultJson), resultJson);
+            return strJson;
+        }
     }
 };

@@ -91,6 +91,7 @@ const server = http.createServer((req, res) => {
   let isStjudeUrl = urlPath.indexOf('stjude') > 0; //StJude not implemented
   console.log('isTreehouseUrl: ', isTreehouseUrl, 'isPedscommonsUrl: ', isPedscommonsUrl,
   'isKidsFirstUrl: ', isKidsFirstUrl, 'isStjudeUrl: ', isStjudeUrl);
+  let isSpecificSpace
 
   function responseLength(strResponse) {//expects a string parameter
     return Buffer.byteLength(strResponse, 'utf8') +'';
@@ -145,7 +146,7 @@ const server = http.createServer((req, res) => {
   }
 });
 
-function getresultHttp(options, urlPath, proto) {
+function getresultHttp(options, urlPath, proto, addSourceInfo = false) {
   let errJson = urlUtils.getDomain(options.host);
   let errorJson = new Object();
   errorJson.errorOrigin = errJson;
@@ -160,6 +161,8 @@ function getresultHttp(options, urlPath, proto) {
       });
       res.on('end', () => {
         try {
+          if (addSourceInfo) //this is until added to original federation responses
+            chunks = urlUtils.addSourceAttr(chunks,options);
           resolve(chunks);
         } catch (err) {
           console.error('error res.on: ', options.host, err.message);
@@ -192,14 +195,14 @@ function aggregateRequests(urlPath) {
     if (urlPath.startsWith("/api/v0/")) {
       urlTemp = urlPath.replace("/api/v0/", "/chop-ccdi-api-dev/api/");
     }   
-    toAggregate.push(getresultHttp(optionsChop, urlTemp, http));
+    toAggregate.push(getresultHttp(optionsChop, urlTemp, http, true));
   } 
   if (optionsPedscommons.host !== undefinedHost)
-    toAggregate.push(getresultHttp(optionsPedscommons, urlPath, https));
+    toAggregate.push(getresultHttp(optionsPedscommons, urlPath, https, true));
   if (optionsTreehouse.host !== undefinedHost)
-    toAggregate.push(getresultHttp(optionsTreehouse, urlPath, https));
+    toAggregate.push(getresultHttp(optionsTreehouse, urlPath, https, true));
   if (optionsStjude.host !== undefinedHost) {
-    toAggregate.push(getresultHttp(optionsStjude, urlPath, https));
+    toAggregate.push(getresultHttp(optionsStjude, urlPath, https, true));
   }
   
   return Promise.all(toAggregate);
