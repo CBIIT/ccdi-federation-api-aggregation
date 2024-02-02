@@ -91,16 +91,22 @@ const server = http.createServer((req, res) => {
   let isStjudeUrl = urlPath.indexOf('stjude') > 0; //StJude not implemented
   //console.log('isTreehouseUrl: ', isTreehouseUrl, 'isPedscommonsUrl: ', isPedscommonsUrl,
   //'isKidsFirstUrl: ', isKidsFirstUrl, 'isStjudeUrl: ', isStjudeUrl);
-
+  function addResponseHeaders (strResLength) {
+     let responseObj = { "Content-Type": contentTypeJson,  
+      "x-frame-options": "SAMEORIGIN", "x-content-type-options": "nosniff",
+      "access-control-allow-origin": "*"};
+     responseObj["Content-Length"] = strResLength;
+     return responseObj;
+  }
   function responseLength(strResponse) {//expects a string parameter
     return Buffer.byteLength(strResponse, 'utf8') +'';
   }
   if (!urlPath || (urlPath.length == 0) || (urlPath === '/')) {
-    res.writeHead(200, {"Content-Type": "text/plain", "Content-Length":"37"});
+    res.writeHead(200, addResponseHeaders(37));
     res.end('CCDI Federation API Aggregation Layer');
   }
   else if (urlPath == "/welcome") {
-    res.writeHead(200, {"Content-Type": "text/plain", "Content-Length":"42"});
+    res.writeHead(200, addResponseHeaders(42));
     res.end('Welcome to CCDI Federation API Aggregation');
   }   
   else if (! urlUtils.validEndpoint(urlPath)) {
@@ -110,19 +116,19 @@ const server = http.createServer((req, res) => {
   else if (isTreehouseUrl&&(optionsTreehouse.host !== undefinedHost)) {
       console.log("Treehouse request: ", urlPath);
       getresultHttp(optionsTreehouse, urlPath, https).then(data => {
-      res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(data)});
+      res.writeHead(200, addResponseHeaders(responseLength(data)));
       res.end(data);
     });//TODO check for valid URL Path
   } else if (isPedscommonsUrl&&(optionsPedscommons.host !== undefinedHost)) {
       console.log("Pedscommons request: ", urlPath);
       getresultHttp(optionsPedscommons, urlPath, https).then(data => {
-      res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(data)});
+      res.writeHead(200, addResponseHeaders(responseLength(data)));
       res.end(data);
     });
   } else if (isStjudeUrl&&(optionsStjude.host !== undefinedHost)) {
       console.log("Stjude request: ", urlPath);
       getresultHttp(optionsStjude, urlPath, https).then(data => {
-      res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(data)});
+      res.writeHead(200, addResponseHeaders(responseLength(data)));
       res.end(data);
     });
   } else if (isKidsFirstUrl &&(optionsChop.host !== undefinedHost)) {
@@ -132,14 +138,14 @@ const server = http.createServer((req, res) => {
       }
       console.log("KidsFirst request: ", urlTemp);
       getresultHttp(optionsChop, urlTemp, http).then(data => {
-      res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(data)});
+      res.writeHead(200, addResponseHeaders(responseLength(data)));
       res.end(data);
     });
   }else {//try to aggregate
       console.log("aggregate results request: ", urlPath);
       aggregateResults(urlPath).then(data => {
       let strRes = urlUtils.concatArray(data);
-      res.writeHead(200, { "Content-Type": contentTypeJson, "Content-Length":responseLength(strRes)});
+      res.writeHead(200, addResponseHeaders(responseLength(strRes)));
       res.end(strRes);
     });
   }
@@ -155,6 +161,8 @@ function getresultHttp(options, urlPath, proto, addSourceInfo = false) {
     let chunks = '';
     options.path = urlPath;
     const req = proto.request(options, (res) => {
+      //console.log("statusCode: ", res.statusCode); // <======= Here's the status code
+      //console.log("headers: ", res.headers);
       res.on('data', chunk => {
         chunks+= chunk;
       });
