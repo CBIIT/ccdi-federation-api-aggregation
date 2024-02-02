@@ -89,9 +89,8 @@ const server = http.createServer((req, res) => {
   let isPedscommonsUrl = urlPath.indexOf('pedscommons') > 0;
   let isKidsFirstUrl = regKidsFirst.test(urlPath);
   let isStjudeUrl = urlPath.indexOf('stjude') > 0; //StJude not implemented
-  console.log('isTreehouseUrl: ', isTreehouseUrl, 'isPedscommonsUrl: ', isPedscommonsUrl,
-  'isKidsFirstUrl: ', isKidsFirstUrl, 'isStjudeUrl: ', isStjudeUrl);
-  let isSpecificSpace
+  //console.log('isTreehouseUrl: ', isTreehouseUrl, 'isPedscommonsUrl: ', isPedscommonsUrl,
+  //'isKidsFirstUrl: ', isKidsFirstUrl, 'isStjudeUrl: ', isStjudeUrl);
 
   function responseLength(strResponse) {//expects a string parameter
     return Buffer.byteLength(strResponse, 'utf8') +'';

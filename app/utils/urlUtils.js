@@ -33,7 +33,6 @@ module.exports = {
     validEndpoint: function (str) {
         // returns true if str starts with "/api/v0/<endpoint>"
         let resValid = false;
-        console.log(arrayEndpoints.join("|"));
         if (str != null) {
             if (str.startsWith(startApiUrl)) {
                 if (new RegExp(validEndpointStart.join("|")).test(str)) {
