@@ -1,5 +1,5 @@
 const startApiUrl = "/api/v0/";
-const arrayEndpoints = ["subject", "sample", "file", "info", "metadata"];
+const arrayEndpoints = ["subject", "sample", "file", "info", "metadata","namespace"];
 const mapSources = new Map([["pedscommons", "UChicago"], ["stjude", "StJude"], ["ucsc", "UCSC"], ["chop", "CHOP"]]);
 // TODO read above endpoints from YAML
 

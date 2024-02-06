@@ -82,6 +82,17 @@ for(var i = 0; i < apiHosts.length;i++){
 var regKidsFirst = new RegExp("Kid.*s.*First.*DRC");
 var contentTypeJson = "application/json; charset=utf-8";
 
+function addResponseHeaders (strResLength) {
+  let responseObj = { "Content-Type": contentTypeJson,  
+   "x-frame-options": "SAMEORIGIN", "x-content-type-options": "nosniff",
+   "access-control-allow-origin": "*"};
+  responseObj["Content-Length"] = strResLength;
+  return responseObj;
+}
+function responseLength(strResponse) {//expects a string parameter
+ return Buffer.byteLength(strResponse, 'utf8') +'';
+}
+
 const server = http.createServer((req, res) => {
   const urlPath = req.url;
   console.log('Request with urlPath: ', urlPath);
@@ -91,16 +102,7 @@ const server = http.createServer((req, res) => {
   let isStjudeUrl = urlPath.indexOf('stjude') > 0; //StJude not implemented
   //console.log('isTreehouseUrl: ', isTreehouseUrl, 'isPedscommonsUrl: ', isPedscommonsUrl,
   //'isKidsFirstUrl: ', isKidsFirstUrl, 'isStjudeUrl: ', isStjudeUrl);
-  function addResponseHeaders (strResLength) {
-     let responseObj = { "Content-Type": contentTypeJson,  
-      "x-frame-options": "SAMEORIGIN", "x-content-type-options": "nosniff",
-      "access-control-allow-origin": "*"};
-     responseObj["Content-Length"] = strResLength;
-     return responseObj;
-  }
-  function responseLength(strResponse) {//expects a string parameter
-    return Buffer.byteLength(strResponse, 'utf8') +'';
-  }
+
   if (!urlPath || (urlPath.length == 0) || (urlPath === '/')) {
     res.writeHead(200, addResponseHeaders(37));
     res.end('CCDI Federation API Aggregation Layer');
