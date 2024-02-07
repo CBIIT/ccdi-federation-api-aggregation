@@ -156,7 +156,7 @@ const server = http.createServer((req, res) => {
 function getresultHttp(options, urlPath, proto, addSourceInfo = false) {
   let errJson = urlUtils.getDomain(options.host);
   let errorJson = new Object();
-  errorJson.errorOrigin = errJson;
+  errorJson.source = errJson;
   errorJson.message = '';
 
   return new Promise ((resolve, reject) => {   
