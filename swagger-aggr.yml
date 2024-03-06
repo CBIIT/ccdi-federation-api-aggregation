@@ -2186,7 +2186,7 @@ components:
         should always resolve to an ordering.
 
         Of course, if there is a provided sort order, use that instead.
-      required:        
+      required:
       - summary
       - data
       properties:
@@ -2306,6 +2306,24 @@ components:
             kind: InvalidRoute
             method: GET
             route: /foobar
+        - type: object
+          description: |-
+            Request Timeout.
+          required:
+          - method
+          - route
+          - kind
+          properties:
+            method:
+              type: string
+              description: The HTTP method that was used in the request.
+            route:
+              type: string
+              description: The route that was requested.
+            kind:
+              type: string
+              enum:
+              - RequestTimeout
         - type: object
           description: One or more invalid query or path parameters were provided.
           required:
