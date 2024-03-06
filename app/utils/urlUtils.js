@@ -2,6 +2,8 @@ const startApiUrl = "/api/v0/";
 const arrayEndpoints = ["subject", "sample", "file", "info", "metadata","namespace"];
 const mapSources = new Map([["pedscommons", "UChicago"], ["stjude", "StJude"], ["ucsc", "UCSC"], ["chop", "CHOP"]]);
 // TODO read above endpoints from YAML
+let errTemplate404 = '{"errors": [{"kind": "InvalidRoute", "method": "GET", "route": ""}]}';
+let errTemplateTimeout = '{"errors": [{"kind": "RequestTimeout", "method": "GET", "route": ""}]}';
 
 const validEndpointStart = arrayEndpoints.map(i => startApiUrl + i);
 function getDomain (strHostName) {
@@ -33,6 +35,7 @@ function validEndpoint (str) {
     return resValid;
 }
 function concatArray(res) {
+    //res expected is an object array of arrays
     let s= '';
     if(!Array.isArray(res)) return res;
     //console.log("concatArray", ''+res.length);
@@ -63,15 +66,34 @@ function addSourceAttr(strJson, options) {
         //resultJson["source"] = strSource;
         return ('{"source":"' + strSource + '",\n ' + strJson.slice(1));
     }
+    else if ((!strJson) || (strJson === "")) {
+        console.log("addSourceAttr empty parameter strJson");
+        let strSource = findRequestSource(options.host);//if source not found use host
+        return ('{"source":"' + strSource+ '}\n');
+    }
     else {
-        console.log("addSourceAttr", typeof(resultJson), resultJson);
+        console.log("addSourceAttr not added to strJson of type ", typeof(strJson), '"' + strJson + '"');
         return strJson;
     }
+}
+function getErrorStr404(strUrl) {
+	//returns 404 error string
+	var obj404 = JSON.parse(errTemplate404);
+	obj404.errors[0].route = strUrl;
+	return JSON.stringify(obj404);
+}
+function getErrorStrTimeout(strUrl) {
+	//returns timeout error string
+	var objTimeout = JSON.parse(errTemplateTimeout);
+	objTimeout.errors[0].route = strUrl;
+	return JSON.stringify(objTimeout);
 }
 module.exports = {
     getDomain ,
     concatArray,
     validEndpoint,
     findRequestSource,
-    addSourceAttr
+    addSourceAttr,
+    getErrorStr404,
+    getErrorStrTimeout
 };

@@ -22,7 +22,7 @@ var optionsTreehouse = {
   headers: {
     Accept: 'application/json',
   },
-  timeout: 2000,
+  timeout: 4000,
   rejectUnauthorized: false,
   ca: caTreehouse
 };
@@ -33,7 +33,7 @@ var optionsPedscommons = {
   headers: {
     Accept: 'application/json',
   },
-  timeout: 2000,
+  timeout: 4000,
   rejectUnauthorized: false,
   ca: caPedscommons
 };
@@ -44,7 +44,7 @@ var optionsChop = {
   headers: {
     Accept: 'application/json',
   },
-  timeout: 3000
+  timeout: 4000
 };
 var optionsStjude = {
   host: undefinedHost,
@@ -53,7 +53,7 @@ var optionsStjude = {
   headers: {
     Accept: 'application/json',
   },
-  timeout: 2000,
+  timeout: 4000,
   rejectUnauthorized: false,
   ca: caStjude
 };
@@ -104,23 +104,31 @@ const server = http.createServer((req, res) => {
   //'isKidsFirstUrl: ', isKidsFirstUrl, 'isStjudeUrl: ', isStjudeUrl);
 
   if (!urlPath || (urlPath.length == 0) || (urlPath === '/')) {
-    res.writeHead(200, addResponseHeaders(37));
-    res.end('CCDI Federation API Aggregation Layer');
+    let data = 'CCDI Federation API Aggregation Layer';
+    res.writeHead(200, addResponseHeaders(responseLength(data)));
+    res.end(data);
   }
   else if (urlPath == "/welcome") {
-    res.writeHead(200, addResponseHeaders(42));
-    res.end('Welcome to CCDI Federation API Aggregation');
+    let data = 'Welcome to CCDI Federation API Aggregation';
+    res.writeHead(200, addResponseHeaders(responseLength(data)));
+    res.end(data);
+  } 
+  else if (urlPath == "/ping") {
+    let data = 'pong';
+    res.writeHead(200, addResponseHeaders(responseLength(data)));
+    res.end(data);
   }   
   else if (! urlUtils.validEndpoint(urlPath)) {
-    res.writeHead(404, {"Content-Type": "text/plain", "Content-Length":"9"});
-    res.end('Not Found');
-  }
+    let data = urlUtils.getErrorStr404(urlPath);
+    res.writeHead(404, addResponseHeaders(responseLength(data)));
+    res.end(data);
+  } //TODO more checks for valid URL Path
   else if (isTreehouseUrl&&(optionsTreehouse.host !== undefinedHost)) {
       console.log("Treehouse request: ", urlPath);
       getresultHttp(optionsTreehouse, urlPath, https).then(data => {
       res.writeHead(200, addResponseHeaders(responseLength(data)));
       res.end(data);
-    });//TODO check for valid URL Path
+    });
   } else if (isPedscommonsUrl&&(optionsPedscommons.host !== undefinedHost)) {
       console.log("Pedscommons request: ", urlPath);
       getresultHttp(optionsPedscommons, urlPath, https).then(data => {
@@ -128,7 +136,7 @@ const server = http.createServer((req, res) => {
       res.end(data);
     });
   } else if (isStjudeUrl&&(optionsStjude.host !== undefinedHost)) {
-      console.log("Stjude request: ", urlPath);
+      console.log("StJude request: ", urlPath);
       getresultHttp(optionsStjude, urlPath, https).then(data => {
       res.writeHead(200, addResponseHeaders(responseLength(data)));
       res.end(data);
@@ -154,11 +162,6 @@ const server = http.createServer((req, res) => {
 });
 
 function getresultHttp(options, urlPath, proto, addSourceInfo = false) {
-  let errJson = urlUtils.getDomain(options.host);
-  let errorJson = new Object();
-  errorJson.source = errJson;
-  errorJson.message = '';
-
   return new Promise ((resolve, reject) => {   
     let chunks = '';
     options.path = urlPath;
@@ -174,23 +177,24 @@ function getresultHttp(options, urlPath, proto, addSourceInfo = false) {
             chunks = urlUtils.addSourceAttr(chunks,options);
           resolve(chunks);
         } catch (err) {
-          console.error('error res.on: ', options.host, err.message);
-          errorJson.message = err.message;
-          resolve(JSON.stringify(errorJson));
+          console.error('error res.on getresultHttp: ', options.host, err.message);
+          console.error(err);
+          //errorJson.message = err.message;       
+          resolve(urlUtils.addSourceAttr(err.message,options));
         };
       });
-
     });
     req.on('timeout', () => {
         console.error('timeout: ', options.host);
-        errorJson.message = errorJson.message + ' timeout';
-        resolve(JSON.stringify(errorJson));
+        let dataTimeout = urlUtils.getErrorStrTimeout(urlPath, urlUtils.findRequestSource(options.host));
+        dataTimeout = urlUtils.addSourceAttr(dataTimeout,options);
+        resolve(dataTimeout);
         req.destroy();
     });
     req.on('error', err => {
       console.error('error req: ', options.host, err.message);
-      errorJson.message += err.message;
-      resolve(JSON.stringify(errorJson));
+      console.error(err);
+      resolve(urlUtils.addSourceAttr(err.message,options));
     });
     req.end();
   });
@@ -206,12 +210,13 @@ function aggregateRequests(urlPath) {
     }   
     toAggregate.push(getresultHttp(optionsChop, urlTemp, http, true));
   } 
+  let addSourceToResponse = true;//add 'source' attribute to endpont responses
   if (optionsPedscommons.host !== undefinedHost)
-    toAggregate.push(getresultHttp(optionsPedscommons, urlPath, https, true));
+    toAggregate.push(getresultHttp(optionsPedscommons, urlPath, https, addSourceToResponse));
   if (optionsTreehouse.host !== undefinedHost)
-    toAggregate.push(getresultHttp(optionsTreehouse, urlPath, https, true));
+    toAggregate.push(getresultHttp(optionsTreehouse, urlPath, https, addSourceToResponse));
   if (optionsStjude.host !== undefinedHost) {
-    toAggregate.push(getresultHttp(optionsStjude, urlPath, https, true));
+    toAggregate.push(getresultHttp(optionsStjude, urlPath, https, addSourceToResponse));
   }
   
   return Promise.all(toAggregate);
