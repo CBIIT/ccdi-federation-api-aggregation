@@ -2,8 +2,8 @@ const startApiUrl = "/api/v0/";
 const arrayEndpoints = ["subject", "sample", "file", "info", "metadata","namespace"];
 const mapSources = new Map([["pedscommons", "UChicago"], ["stjude", "StJude"], ["ucsc", "UCSC"], ["chop", "CHOP"]]);
 // TODO read above endpoints from YAML
-let errTemplate404 = '{"errors": [{"kind": "InvalidRoute", "method": "GET", "route": ""}]}';
-let errTemplateTimeout = '{"errors": [{"kind": "RequestTimeout", "method": "GET", "route": ""}]}';
+let errTemplate404 = '{"errors": [{"kind": "InvalidRoute", "method": "GET", "route": "", "message":"The requested URL was not found."}]}';
+let errTemplateTimeout = '{"errors": [{"kind": "RequestTimeout", "method": "GET", "route": "", "message":"Request Timeout."}]}';
 
 const validEndpointStart = arrayEndpoints.map(i => startApiUrl + i);
 function getDomain (strHostName) {

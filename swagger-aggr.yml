@@ -7,8 +7,8 @@ info:
     email: NCIChildhoodCancerDataInitiative@mail.nih.gov
   version: v0.6.1
 servers:
-- url: https://federation-dev.ccdi.cancer.gov/api/v0
-  description: Federation CCDI API Aggregation server
+  - url: https://federation-dev.ccdi.cancer.gov/api/v0
+    description: Federation CCDI API Aggregation server
 paths:
   /subject:
     get:
@@ -2632,7 +2632,7 @@ components:
       type: object
       description: A response for describing metadata fields for a subject.
       required:
-      - fields
+        - fields
       properties:
         fields:
           type: array
@@ -2643,7 +2643,7 @@ components:
       type: object
       description: Counts included in a summary endpoint.
       required:
-      - total
+        - total
       properties:
         source:
           type: string
@@ -2657,9 +2657,9 @@ components:
       description: |-
         An aggregated response representing multiple subjects.
       items:
-        anyOf: 
-         - $ref: '#/components/schemas/responses.Subjects'
-         - $ref: '#/components/schemas/responses.Errors'
+        anyOf:
+          - $ref: '#/components/schemas/responses.Subjects'
+          - $ref: '#/components/schemas/responses.Errors'
     responses.SubjectArray:
       type: array
       description: |-
@@ -2674,23 +2674,23 @@ components:
         An aggregated response representing multiple groups by counts.
         known by the servers.
       items:
-        anyOf: 
-         - $ref: '#/components/schemas/responses.by.count.Subjects'
-         - $ref: '#/components/schemas/responses.Errors'
+        anyOf:
+          - $ref: '#/components/schemas/responses.by.count.Subjects'
+          - $ref: '#/components/schemas/responses.Errors'
     responses.SamplesArray:
       type: array
       description: |-
         An aggregated response representing multiple samples.
       items:
-        anyOf: 
-         - $ref: '#/components/schemas/responses.Samples'
-         - $ref: '#/components/schemas/responses.Errors'
+        anyOf:
+          - $ref: '#/components/schemas/responses.Samples'
+          - $ref: '#/components/schemas/responses.Errors'
     responses.SampleArray:
       type: array
       description: |-
         An aggregated response representing multiple samples.
       items:
-        anyOf: 
+        anyOf:
          - $ref: '#/components/schemas/responses.Sample'
          - $ref: '#/components/schemas/responses.Errors'
     responses.by.count.SamplesArray:
@@ -2698,57 +2698,57 @@ components:
       description: |-
         An aggregated response representing multiple multiple groups by counts.
       items:
-        anyOf: 
-         - $ref: '#/components/schemas/responses.by.count.Samples'
-         - $ref: '#/components/schemas/responses.Errors'
+        anyOf:
+          - $ref: '#/components/schemas/responses.by.count.Samples'
+          - $ref: '#/components/schemas/responses.Errors'
     responses.SummaryArray:
       type: array
       description: |-
         An aggregated response representing multiple summaries.
       items:
         anyOf:
-         - $ref: '#/components/schemas/responses.Summary'
-         - $ref: '#/components/schemas/responses.Errors'
+          - $ref: '#/components/schemas/responses.Summary'
+          - $ref: '#/components/schemas/responses.Errors'
     responses.FilesArray:
       type: array
       description: |-
         An aggregated response representing multiple files.
       items:
         anyOf:
-         - $ref: '#/components/schemas/responses.Files'
-         - $ref: '#/components/schemas/responses.Errors'
+          - $ref: '#/components/schemas/responses.Files'
+          - $ref: '#/components/schemas/responses.Errors'
     responses.metadata.FieldDescriptionsArray:
       type: array
       description: |-
         An aggregated response representing multiple fields.
       items:
         anyOf:
-         - $ref: '#/components/schemas/responses.metadata.FieldDescriptions'
-         - $ref: '#/components/schemas/responses.Errors'
+          - $ref: '#/components/schemas/responses.metadata.FieldDescriptions'
+          - $ref: '#/components/schemas/responses.Errors'
     responses.NamespacesArray:
       type: array
       description: |-
         An aggregated response representing multiple namespaces.
       items:
         anyOf:
-         - $ref: '#/components/schemas/responses.Namespaces'
-         - $ref: '#/components/schemas/responses.Errors'
+          - $ref: '#/components/schemas/responses.Namespaces'
+          - $ref: '#/components/schemas/responses.Errors'
     responses.NamespaceArray:
       type: array
       description: |-
         An aggregated response representing multiple namespaces.
       items:
         anyOf:
-         - $ref: '#/components/schemas/responses.Namespace'
-         - $ref: '#/components/schemas/responses.Errors'
+          - $ref: '#/components/schemas/responses.Namespace'
+          - $ref: '#/components/schemas/responses.Errors'
     responses.InformationArray:
       type: array
       description: |-
         An aggregated response representing multiple information objects.
       items:
         anyOf:
-         - $ref: '#/components/schemas/responses.Information'
-         - $ref: '#/components/schemas/responses.Errors'
+          - $ref: '#/components/schemas/responses.Information'
+          - $ref: '#/components/schemas/responses.Errors'
 tags:
 - name: Subject
   description: Subjects within the CCDI federated ecosystem.

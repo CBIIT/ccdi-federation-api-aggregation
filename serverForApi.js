@@ -96,13 +96,6 @@ function responseLength(strResponse) {//expects a string parameter
 const server = http.createServer((req, res) => {
   const urlPath = req.url;
   console.log('Request with urlPath: ', urlPath);
-  let isTreehouseUrl = (urlPath.indexOf('ucsc-treehouse') > 0) || (urlPath.indexOf('ucsc-xena') > 0);
-  let isPedscommonsUrl = urlPath.indexOf('pedscommons') > 0;
-  let isKidsFirstUrl = regKidsFirst.test(urlPath);
-  let isStjudeUrl = urlPath.indexOf('stjude') > 0; //StJude not implemented
-  //console.log('isTreehouseUrl: ', isTreehouseUrl, 'isPedscommonsUrl: ', isPedscommonsUrl,
-  //'isKidsFirstUrl: ', isKidsFirstUrl, 'isStjudeUrl: ', isStjudeUrl);
-
   if (!urlPath || (urlPath.length == 0) || (urlPath === '/')) {
     let data = 'CCDI Federation API Aggregation Layer';
     res.writeHead(200, addResponseHeaders(responseLength(data)));
@@ -121,42 +114,14 @@ const server = http.createServer((req, res) => {
   else if (! urlUtils.validEndpoint(urlPath)) {
     let data = urlUtils.getErrorStr404(urlPath);
     res.writeHead(404, addResponseHeaders(responseLength(data)));
-    res.end(data);
-  } //TODO more checks for valid URL Path
-  else if (isTreehouseUrl&&(optionsTreehouse.host !== undefinedHost)) {
-      console.log("Treehouse request: ", urlPath);
-      getresultHttp(optionsTreehouse, urlPath, https).then(data => {
-      res.writeHead(200, addResponseHeaders(responseLength(data)));
-      res.end(data);
-    });
-  } else if (isPedscommonsUrl&&(optionsPedscommons.host !== undefinedHost)) {
-      console.log("Pedscommons request: ", urlPath);
-      getresultHttp(optionsPedscommons, urlPath, https).then(data => {
-      res.writeHead(200, addResponseHeaders(responseLength(data)));
-      res.end(data);
-    });
-  } else if (isStjudeUrl&&(optionsStjude.host !== undefinedHost)) {
-      console.log("StJude request: ", urlPath);
-      getresultHttp(optionsStjude, urlPath, https).then(data => {
-      res.writeHead(200, addResponseHeaders(responseLength(data)));
-      res.end(data);
-    });
-  } else if (isKidsFirstUrl &&(optionsChop.host !== undefinedHost)) {
-      let urlTemp = urlPath;//TODO remove when the server is fixed
-      if (urlPath.startsWith("/api/v0/")) {
-        urlTemp = urlPath.replace("/api/v0/", "/chop-ccdi-api-dev/api/");
-      }
-      console.log("KidsFirst request: ", urlTemp);
-      getresultHttp(optionsChop, urlTemp, http).then(data => {
-      res.writeHead(200, addResponseHeaders(responseLength(data)));
-      res.end(data);
-    });
-  }else {//try to aggregate
-      console.log("aggregate results request: ", urlPath);
-      aggregateResults(urlPath).then(data => {
-      let strRes = urlUtils.concatArray(data);
-      res.writeHead(200, addResponseHeaders(responseLength(strRes)));
-      res.end(strRes);
+    res.end(data); 
+  }//TODO more checks for valid URL Path
+  else {//try to aggregate
+    console.log("aggregate results request: ", urlPath);
+    aggregateResults(urlPath).then(data => {
+     let strRes = urlUtils.concatArray(data);
+     res.writeHead(200, addResponseHeaders(responseLength(strRes)));
+     res.end(strRes);
     });
   }
 });
