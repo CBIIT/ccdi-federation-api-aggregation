@@ -126,9 +126,10 @@ const server = http.createServer((req, res) => {
   }
 });
 
-function getresultHttp(options, urlPath, proto, addSourceInfo = false) {
-  return new Promise ((resolve, reject) => {   
+function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
+  return new Promise ((resolve, reject) => {
     let chunks = '';
+    var options = structuredClone(optionsNode);
     options.path = urlPath;
     const req = proto.request(options, (res) => {
       //console.log("statusCode: ", res.statusCode); // <======= Here's the status code
