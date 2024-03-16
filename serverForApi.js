@@ -66,7 +66,7 @@ var serverHost = process.env.server_host;
 if (serverHost) {
   SERVER_HOST = serverHost;
 }
-console.log(apiHosts ); //TODO remove log
+console.log(apiHosts, __dirname); //TODO remove log
 
 for(var i = 0; i < apiHosts.length;i++){
   if (apiHosts[i].includes("pedscommons"))
@@ -82,11 +82,11 @@ for(var i = 0; i < apiHosts.length;i++){
 var regKidsFirst = new RegExp("Kid.*s.*First.*DRC");
 var contentTypeJson = "application/json; charset=utf-8";
 
-function addResponseHeaders (strResLength) {
-  let responseObj = { "Content-Type": contentTypeJson,  
-   "x-frame-options": "SAMEORIGIN", "x-content-type-options": "nosniff",
+function addResponseHeaders (strResLength, strContent=contentTypeJson) {
+  let responseObj = {"x-frame-options": "SAMEORIGIN", "x-content-type-options": "nosniff",
    "access-control-allow-origin": "*"};
   responseObj["Content-Length"] = strResLength;
+  responseObj["Content-Type"] = strContent;
   return responseObj;
 }
 function responseLength(strResponse) {//expects a string parameter
@@ -98,17 +98,17 @@ const server = http.createServer((req, res) => {
   console.log('Request with urlPath: ', urlPath);
   if (!urlPath || (urlPath.length == 0) || (urlPath === '/')) {
     let data = 'CCDI Federation API Aggregation Layer';
-    res.writeHead(200, addResponseHeaders(responseLength(data)));
+    res.writeHead(200, addResponseHeaders(responseLength(data), 'text/plain'));
     res.end(data);
   }
   else if (urlPath == "/welcome") {
     let data = 'Welcome to CCDI Federation API Aggregation';
-    res.writeHead(200, addResponseHeaders(responseLength(data)));
+    res.writeHead(200, addResponseHeaders(responseLength(data), 'text/plain'));
     res.end(data);
   } 
   else if (urlPath == "/ping") {
     let data = 'pong';
-    res.writeHead(200, addResponseHeaders(responseLength(data)));
+    res.writeHead(200, addResponseHeaders(responseLength(data), 'text/plain'));
     res.end(data);
   }   
   else if (! urlUtils.validEndpoint(urlPath)) {
@@ -140,27 +140,27 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
       res.on('end', () => {
         try {
           if (addSourceInfo) //this is until added to original federation responses
-            chunks = urlUtils.addSourceAttr(chunks,options);
+            chunks = urlUtils.addSourceAttr(chunks,options,urlPath);
           resolve(chunks);
         } catch (err) {
           console.error('error res.on getresultHttp: ', options.host, err.message);
           console.error(err);
           //errorJson.message = err.message;       
-          resolve(urlUtils.addSourceAttr(err.message,options));
+          resolve(urlUtils.addSourceAttr(err.message,options,urlPath));
         };
       });
     });
     req.on('timeout', () => {
         console.error('timeout: ', options.host);
         let dataTimeout = urlUtils.getErrorStrTimeout(urlPath, urlUtils.findRequestSource(options.host));
-        dataTimeout = urlUtils.addSourceAttr(dataTimeout,options);
+        dataTimeout = urlUtils.addSourceAttr(dataTimeout,options,urlPath);
         resolve(dataTimeout);
         req.destroy();
     });
     req.on('error', err => {
       console.error('error req: ', options.host, err.message);
       console.error(err);
-      resolve(urlUtils.addSourceAttr(err.message,options));
+      resolve(urlUtils.addSourceAttr(err.message,options,urlPath));
     });
     req.end();
   });
