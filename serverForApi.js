@@ -12,7 +12,8 @@ const urlUtils = require("./app/utils/urlUtils");
 // const caPedscommons = [fs.readFileSync("./ccdifederation-pedscommons-org.pem")];
 // const caStjude = [fs.readFileSync("./ccdi-stjude-cloud.pem")];
 
-var SERVER_HOST = "localhost" //"0.0.0.0" for container from docker
+//var SERVER_HOST = "localhost";
+var SERVER_HOST = "0.0.0.0" //for container from docker
 
 var undefinedHost = "undefinedHost";
 var optionsTreehouse = {
