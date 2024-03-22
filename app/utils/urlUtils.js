@@ -38,7 +38,7 @@ function concatArray(res) {
     //res expected is an object array of arrays
     let s= '';
     if(!Array.isArray(res)) return res;
-    //console.log("concatArray", ''+res.length);
+    //console.log("debug", "concatArray", ''+res.length);
     if(res.length < 1) return '[]';
     let prefix= '[';
     res.forEach(function(x) {s+= prefix+x; prefix= ',';});
@@ -67,12 +67,12 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
         return ('{"source":"' + strSource + '",\n ' + strJson.slice(1));
     }
     else if ((!strJson) || (strJson === "")) {
-        console.log("addSourceAttr empty parameter strJson");
+        console.log("info", "addSourceAttr empty parameter strJson");
         let strSource = findRequestSource(options.host);//if source not found use host
         return ('{"source":"' + strSource+ '"}\n');
     }
     else {
-        console.log("addSourceAttr not added to strJson of type ", typeof(strJson), '"' + strJson + '"');
+        console.log("info", "addSourceAttr not added to strJson of type ", typeof(strJson), '"' + strJson + '"');
         return strJson;
     }
 }

@@ -7,10 +7,10 @@ const process = require("process");
 const fs = require('fs');
 const urlUtils = require("./app/utils/urlUtils");
 
-//certificate loading is static as of now
-const caTreehouse = [fs.readFileSync("./treehouse-cer.pem")];
-const caPedscommons = [fs.readFileSync("./ccdifederation-pedscommons-org.pem")];
-const caStjude = [fs.readFileSync("./ccdi-stjude-cloud.pem")];
+//certificates are not used, defined by setting rejectUnauthorized
+// const caTreehouse = [fs.readFileSync("./treehouse-cer.pem")];
+// const caPedscommons = [fs.readFileSync("./ccdifederation-pedscommons-org.pem")];
+// const caStjude = [fs.readFileSync("./ccdi-stjude-cloud.pem")];
 
 var SERVER_HOST = "localhost" //"0.0.0.0" for container from docker
 
@@ -23,8 +23,8 @@ var optionsTreehouse = {
     Accept: 'application/json',
   },
   timeout: 4000,
-  rejectUnauthorized: false,
-  ca: caTreehouse
+  rejectUnauthorized: false//,
+  //ca: caTreehouse
 };
 var optionsPedscommons = {
   host: undefinedHost,
@@ -34,8 +34,8 @@ var optionsPedscommons = {
     Accept: 'application/json',
   },
   timeout: 4000,
-  rejectUnauthorized: false,
-  ca: caPedscommons
+  rejectUnauthorized: false//,
+  //ca: caPedscommons
 };
 var optionsChop = {
   host: undefinedHost,
@@ -54,8 +54,8 @@ var optionsStjude = {
     Accept: 'application/json',
   },
   timeout: 4000,
-  rejectUnauthorized: false,
-  ca: caStjude
+  rejectUnauthorized: false//,
+  //ca: caStjude
 };
 // hosts registration is static for now
 // host are defined in env var federation_apis
@@ -66,7 +66,7 @@ var serverHost = process.env.server_host;
 if (serverHost) {
   SERVER_HOST = serverHost;
 }
-console.log(apiHosts, __dirname); //TODO remove log
+console.log("info", apiHosts, __dirname);
 
 for(var i = 0; i < apiHosts.length;i++){
   if (apiHosts[i].includes("pedscommons"))
@@ -95,7 +95,7 @@ function responseLength(strResponse) {//expects a string parameter
 
 const server = http.createServer((req, res) => {
   const urlPath = req.url;
-  console.log('Request with urlPath: ', urlPath);
+  console.log("info", 'request with urlPath: ', urlPath);
   if (!urlPath || (urlPath.length == 0) || (urlPath === '/')) {
     let data = 'CCDI Federation API Aggregation Layer';
     res.writeHead(200, addResponseHeaders(responseLength(data), 'text/plain'));
@@ -117,7 +117,7 @@ const server = http.createServer((req, res) => {
     res.end(data); 
   }//TODO more checks for valid URL Path
   else {//try to aggregate
-    console.log("aggregate results request: ", urlPath);
+    console.log("info", "aggregate results request: ", urlPath);
     aggregateResults(urlPath).then(data => {
      let strRes = urlUtils.concatArray(data);
      res.writeHead(200, addResponseHeaders(responseLength(strRes)));
@@ -132,8 +132,8 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
     var options = structuredClone(optionsNode);
     options.path = urlPath;
     const req = proto.request(options, (res) => {
-      //console.log("statusCode: ", res.statusCode); // <======= Here's the status code
-      //console.log("headers: ", res.headers);
+      //console.log("info", "statusCode: ", res.statusCode); // <======= Here's the status code
+      //console.log("debug", "headers: ", res.headers);
       res.on('data', chunk => {
         chunks+= chunk;
       });
@@ -143,7 +143,7 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
             chunks = urlUtils.addSourceAttr(chunks,options,urlPath);
           resolve(chunks);
         } catch (err) {
-          console.error('error res.on getresultHttp: ', options.host, err.message);
+          console.error("error", 'error res.on getresultHttp: ', options.host, err.message);
           console.error(err);
           //errorJson.message = err.message;       
           resolve(urlUtils.addSourceAttr(err.message,options,urlPath));
@@ -151,15 +151,14 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
       });
     });
     req.on('timeout', () => {
-        console.error('timeout: ', options.host);
+        console.error("error", 'timeout: ', options.host);
         let dataTimeout = urlUtils.getErrorStrTimeout(urlPath, urlUtils.findRequestSource(options.host));
         dataTimeout = urlUtils.addSourceAttr(dataTimeout,options,urlPath);
         resolve(dataTimeout);
         req.destroy();
     });
     req.on('error', err => {
-      console.error('error req: ', options.host, err.message);
-      console.error(err);
+      console.error("error", 'error req: ', options.host, err.message);
       resolve(urlUtils.addSourceAttr(err.message,options,urlPath));
     });
     req.end();
@@ -191,7 +190,7 @@ function aggregateRequests(urlPath) {
   //return Promise.all([requestChop]);
 }
 async function aggregateResults(urlPath){
-  //console.log('aggregateResults started:', urlPath);
+  //console.log("info", 'aggregateResults started:', urlPath);
   //this is a direct test
   //return res = await getresultHttp(optionsChop, urlPath);//this works
   return res = await aggregateRequests(urlPath);
