@@ -1,0 +1,43 @@
+{
+  "name": "ccdi-federation-api-validator",
+  "version": "0.1.0",
+  "description": "",
+  "main": "appVal.js",
+  "scripts": {
+    "start": "node appVal.js",
+    "deps": "cd ../../ && npm i && npm run compile",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=21.1.2",
+    "npm": ">=10.2.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CBIIT/ccdi-federation-api-aggregation.git"
+  },
+  "keywords": [
+    "CBIIT",
+    "CCDI",
+    "FNLCR",
+    "Data",
+    "Federation",
+    "API",
+    "REST",
+    "validator"
+  ],
+  "author": "CBIIT",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CBIIT/ccdi-federation-api-aggregation/issues"
+  },
+  "homepage": "https://github.com/CBIIT/ccdi-federation-api-aggregation#readme",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2",
+    "express-openapi-validator": "^4.13.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.13"
+  }
+}
