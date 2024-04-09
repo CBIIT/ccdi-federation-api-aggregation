@@ -4,7 +4,6 @@ const http = require('http');
 const cookieParser = require('cookie-parser'); // Add if using cookie auth
 //const { Info } = require('./services'); //this is a directory if required
 const OpenApiValidator = require('express-openapi-validator');
-const mapHosts = new Map([["pcdc", "ccdifederation.pedscommons.org"], ["stjude", "ccdi.stjude.cloud"], ["ucsc", "ccdi.treehouse.gi.ucsc.edu"]]);
 
 const port = 3112;
 const app = express();
@@ -13,8 +12,6 @@ const apiSpec = path.join(__dirname, 'api.yaml');
 const https = require('https');
 var optionsStJude = {
   host: "ccdi.stjude.cloud",
-  //host: "ccdi.treehouse.gi.ucsc.edu",
-  //host: "ccdifederation.pedscommons.org",
   //path: urlPath,
   method: 'GET',
   headers: {
@@ -26,16 +23,15 @@ var optionsStJude = {
 
 const args = process.argv;
 console.log("args", args);
-let hostInfo = args[2];//expect 
 
 // 1. Install bodyParsers for the request types your API will support
 app.use(express.urlencoded({ extended: false }));
 app.use(express.text());
 app.use(express.json());
 app.use(cookieParser()); // Add if using cookie auth enables req.cookies
-//const fs = require('fs');//This is for tests
-//var testdata = JSON.parse(fs.readFileSync('./testSummary.json', 'utf8'));
 
+//const fs = require('fs');//This is for tests
+//let testdata = JSON.parse(fs.readFileSync('./testSummary.json', 'utf8'));
 
 // Optionally serve the API spec
 app.use('/spec', express.static(apiSpec));
@@ -53,18 +49,15 @@ app.get('/ping', function (req, res, next) {
   res.send('pong');
 });
 app.get('/api/v0/*', function (req, res, next) {
-  var options = structuredClone(optionsStJude);
-  options.path = req.originalUrl;
-  console.log("info",req.originalUrl);
+  console.log("info",req.originalUrl, req.protocol, req.headers['x-federation-node']);
   //These are validatio tests instead of requesting from API endpoint
-  //let testdata = require('./testSummary.json');
-  //let testdata = require('./testStJudeId.json');
-  // subject/stjude/SJ000003
-  //let testdata = require('./testSubjectNoMetadata.json');
-  //let testdata = require('./testByCountWithMissing.json');
-  //let testdata = require('./testStJudeIdWrongPVs.json');
+  //let testdata = require('./tests/testSummary.json');
+  //let testdata = require('./tests/testByIdStJude.json');
+  //let testdata = require('./tests/testByCount.json');
+  //let testdata = require('./tests/testFileSearch.json');
+  //let testdata = require('./tests/testByIdUcsc.json');
   //res.json(testdata);
-  aggregateResults(req.originalUrl).then(data => {
+  aggregateResults(req).then(data => {
     console.log('data', data);
     res.json(JSON.parse(data));
   });
@@ -83,13 +76,13 @@ app.use((err, req, res, next) => {
   });
 });
 //send the request to API endpoint
-function getresultHttp(optionsNode, urlPath, proto) {
+function getresultHttp(optionsNode, urlPath, proto, hostInfo) {
   return new Promise ((resolve, reject) => {
     let chunks = '';
-    var options = structuredClone(optionsNode);
+    let options = structuredClone(optionsNode);
     options.path = urlPath;
-    if ((hostInfo) && mapHosts.get(hostInfo)) {
-        options.host = mapHosts.get(hostInfo);
+    if (hostInfo) {
+        options.host = hostInfo;
     }
     console.log("info", options);
     const req = proto.request(options, (res) => {
@@ -125,8 +118,9 @@ function getresultHttp(optionsNode, urlPath, proto) {
   });
 }
 //This is to wait for API endpoint response
-async function aggregateResults(urlPath){
-  return res = await getresultHttp(optionsStJude, urlPath, https);//this works
+async function aggregateResults(req){
+  return res = await getresultHttp(optionsStJude, req.originalUrl, 
+  https, req.headers['x-federation-node']);//x-federation-node header host expected
 }
 
 http.createServer(app).listen(port);

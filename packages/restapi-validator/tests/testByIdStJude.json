@@ -1,0 +1,52 @@
+{
+    "id": {
+        "namespace": "stjude",
+        "name": "SJ006401"
+    },
+    "name": "SJ006401",
+    "kind": "Participant",
+    "metadata": {
+        "identifiers": [
+            {
+                "owned": true,
+                "value": {
+                    "namespace": "stjude",
+                    "name": "SJ006401"
+                },
+                "ancestors": [
+                    "unharmonized.subject_name"
+                ]
+            }
+        ],
+        "ethnicity": {
+            "value": "Not reported",
+            "ancestors": [
+                "unharmonized.attr_ethnicity"
+            ],
+            "comment": null
+        },
+        "sex": {
+            "value": "F",
+            "ancestors": [
+                "unharmonized.attr_sex"
+            ],
+            "comment": null
+        },
+        "race": [
+            {
+                "value": null,
+                "ancestors": [
+                    "unharmonized.attr_race"
+                ],
+                "comment": null
+            }
+        ],
+        "age_at_vital_status": null
+    },
+    "summary": {
+        "counts": {
+            "all": 12460,
+            "current": 4
+        }
+    }
+}

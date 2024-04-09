@@ -1,0 +1,50 @@
+{
+    "data": {
+        "summary": {
+            "counts": {
+                "all": 129525,
+                "total": 1
+            }
+        },
+        "files": [
+            {
+                "id": {
+                    "namespace": "stjude",
+                    "name": "file-F8pg1V09YYVYPFgZ2xj7vyfk"
+                },
+                "samples": [
+                    {
+                        "namespace": "stjude",
+                        "name": "SJOS042758_G1"
+                    }
+                ],
+                "metadata": {
+                    "size": {
+                        "value": null,
+                        "ancestors": null
+                    },
+                    "type": {
+                        "value": null,
+                        "ancestors": [
+                            "unharmonized.file_type"
+                        ]
+                    },
+                    "checksums": null,
+                    "description": null
+                },
+                "gateways": [
+                    {
+                        "kind": "Controlled",
+                        "gateway": {
+                            "kind": "Controlled",
+                            "link": {
+                                "kind": "Approximate",
+                                "url": "https://platform.stjude.cloud/data/samples?selected_tags=SJOS042758_G1&search=SJOS042758_G1"
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

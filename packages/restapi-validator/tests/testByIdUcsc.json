@@ -1,0 +1,74 @@
+{
+    "id": {
+        "namespace": "ucsc-treehouse",
+        "name": "53"
+    },
+    "name": "TH01_0053",
+    "kind": "Participant",
+    "metadata": {
+        "unharmonized": {
+            "id": {
+                "value": "53"
+            },
+            "Age_at_diagnosis": {
+                "value": 8
+            },
+            "Cancer_predisposition_syndrome": {
+                "value": "Unknown"
+            },
+            "Ethnicity": {
+                "value": "Hispanic or Latino"
+            },
+            "Metastatic_status": {
+                "value": "N/A"
+            },
+            "Original_donor_ID": {
+                "value": "CHOC UD#20"
+            },
+            "Pediatric_or_AYA": {
+                "value": "Yes, age < 30 years"
+            },
+            "Race": {
+                "value": "White"
+            },
+            "Sex": {
+                "value": "not reported"
+            },
+            "Site_ID": {
+                "value": "TH01"
+            },
+            "sampleID": {
+                "value": "53"
+            }
+        },
+        "sex": {
+            "value": "U"
+        },
+        "race": [
+            {
+                "value": "White"
+            }
+        ],
+        "ethnicity": {
+            "value": "Hispanic or Latino"
+        },
+        "identifiers": [
+            {
+                "value": {
+                    "namespace": "ucsc-treehouse",
+                    "name": "53"
+                },
+                "comment": "subject_number",
+                "owned": true
+            },
+            {
+                "value": {
+                    "namespace": "ucsc-treehouse",
+                    "name": "TH01_0053"
+                },
+                "comment": "subject_with_site_id",
+                "owned": true
+            }
+        ]
+    }
+}

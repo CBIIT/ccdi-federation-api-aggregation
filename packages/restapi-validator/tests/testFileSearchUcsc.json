@@ -1,0 +1,32 @@
+{
+    "data": {
+        "files": [
+            {
+                "id": {
+                    "namespace": "ucsc-xena",
+                    "name": "TumorCompendium_v11_PolyA_hugo_log2tpm_58581genes_2020-04-09.tsv"
+                },
+                "samples": [],
+                "gateways": [
+                    {
+                        "kind": "Anonymous",
+                        "gateway": {
+                            "kind": "Open",
+                            "link": {
+                                "kind": "Direct",
+                                "url": "https://xena.treehouse.gi.ucsc.edu/download/TumorCompendium_v11_PolyA_hugo_log2tpm_58581genes_2020-04-09.tsv"
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+        "gateways": [],
+        "summary": {
+            "counts": {
+                "all": 6,
+                "current": 1
+            }
+        }
+    }
+}
