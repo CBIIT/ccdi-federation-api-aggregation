@@ -1,6 +1,6 @@
 {
   "name": "ccdi-federation-api-aggregation",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "CCDI Data Federation platform API aggregation level implementation.",
   "main": "serverForApi.js",
   "scripts": {
@@ -40,7 +40,6 @@
     "https": "^1.0.0",
     "process": "^0.11.10",
     "psl": "^1.9.0",
-    "require": "^2.4.20",
     "sanitize": "^2.1.2"
   },
   "devDependencies": {
