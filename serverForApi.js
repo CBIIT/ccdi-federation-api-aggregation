@@ -68,6 +68,10 @@ if (serverHost) {
   SERVER_HOST = serverHost;
 }
 console.log("info", apiHosts, __dirname);
+var apiVersionEnv = process.env.API_VERSION;
+var projectEnv = process.env.PROJECT;
+var tierEnv = process.env.tier;
+console.log("info environment: PROJECT", projectEnv, ", API_VERSION", apiVersionEnv, ", tier", tierEnv);
 
 for(var i = 0; i < apiHosts.length;i++){
   if (apiHosts[i].includes("pedscommons"))
@@ -111,7 +115,12 @@ const server = http.createServer((req, res) => {
     let data = 'pong';
     res.writeHead(200, addResponseHeaders(responseLength(data), 'text/plain'));
     res.end(data);
-  }   
+  }
+  else if (urlPath == "/version") {
+    let data = '{"version":"'.concat(apiVersionEnv, '"}');
+    res.writeHead(200, addResponseHeaders(responseLength(data), 'application/json'));
+    res.end(data);
+  } 
   else if (! urlUtils.validEndpoint(urlPath)) {
     let data = urlUtils.getErrorStr404(urlPath);
     res.writeHead(404, addResponseHeaders(responseLength(data)));
@@ -198,7 +207,7 @@ async function aggregateResults(urlPath){
 }
 
 server.listen(3000, SERVER_HOST, () => {
-  console.log("Listening for request on port 3000");
+  console.log("CCDI Federation API Aggregation service listening for requests");
   console.log('Port :' + server.address().port);
   console.log('Server:' + server.address().address);
 });
