@@ -2,9 +2,13 @@
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
 
-ARG NODE_VERSION=21.1.0
+ARG NODE_VERSION=21.7.3
 
-FROM node:${NODE_VERSION}-alpine
+FROM node:${NODE_VERSION}-alpine3.19
+
+## Update Alpine option
+#RUN apk update
+#RUN apk upgrade
 
 # ENV federation_apis=${federation_apis}
 
@@ -21,6 +25,14 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=package-lock.json,target=package-lock.json \
     --mount=type=cache,target=/root/.npm \
     npm ci --omit=dev
+
+## Below to update npm modules option
+## Install node_modules into the local project, the latest version
+#RUN npm install npm
+## Replace modules in npm
+#RUN rm -rf /usr/local/lib/node_modules/npm
+## Remove modules from the local project
+#RUN mv node_modules/npm /usr/local/lib/node_modules/npm
 
 # Copy the rest of the source files into the image.
 COPY --chown=node . .
