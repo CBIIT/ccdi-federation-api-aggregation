@@ -4,7 +4,7 @@
 
 ARG NODE_VERSION=21.7.3
 
-FROM node:${NODE_VERSION}-alpine3.19
+FROM node:${NODE_VERSION}-alpine3.19 AS fnl_base_image
 
 ## Update Alpine option
 #RUN apk update
