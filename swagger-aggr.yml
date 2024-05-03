@@ -2487,10 +2487,6 @@ components:
       - id
       - samples
       properties:
-        source:
-          type: string
-          description: |-
-            A reference to a Federation Node.
         id:
           $ref: '#/components/schemas/models.file.Identifier'
         samples:
@@ -2678,10 +2674,6 @@ components:
       - id
       - subject
       properties:
-        source:
-          type: string
-          description: |-
-            A reference to a Federation node.
         id:
           $ref: '#/components/schemas/models.sample.Identifier'
         subject:
@@ -2724,10 +2716,6 @@ components:
       - id
       - kind
       properties:
-        source:
-          type: string
-          description: |-
-            A reference to a Federation node.
         id:
           $ref: '#/components/schemas/models.subject.Identifier'
         kind:
@@ -3766,6 +3754,11 @@ components:
       - $ref: '#/components/schemas/models.File'
       - type: object
       description: A response representing a single [`File`](models::File).
+      properties:
+        source:
+          type: string
+          description: |-
+            A reference to a Federation Node.
     responses.Files:
       type: object
       description: |-
@@ -3842,6 +3835,11 @@ components:
       - $ref: '#/components/schemas/models.Sample'
       - type: object
       description: A response representing a single [`Sample`](models::Sample).
+      properties:
+        source:
+          type: string
+          description: |-
+            A reference to a Federation Node.
     responses.Samples:
       type: object
       description: |-
@@ -3886,6 +3884,11 @@ components:
       - $ref: '#/components/schemas/models.Subject'
       - type: object
       description: A response representing a single [`Subject`](models::Subject).
+      properties:
+        source:
+          type: string
+          description: |-
+            A reference to a Federation Node.
     responses.Subjects:
       type: object
       description: |-
@@ -4460,7 +4463,7 @@ components:
       items:
         anyOf:
           - $ref: '#/components/schemas/responses.File'
-          - $ref: '#/components/schemas/responses.Errors'    
+          - $ref: '#/components/schemas/responses.Errors'
     responses.by.count.file.ResultsArray:
       type: array
       description: |-
