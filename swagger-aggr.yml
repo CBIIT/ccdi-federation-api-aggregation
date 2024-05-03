@@ -337,14 +337,8 @@ info:
     email: NCIChildhoodCancerDataInitiative@mail.nih.gov
   version: v1.0.0
 servers:
-- url: https://ccdi.stjude.cloud/api/v0
-  description: St. Jude Children's Research Hospital CCDI API server
-- url: https://ccdifederation.pedscommons.org/api/v0
-  description: Pediatric Cancer Data Commons CCDI API server
-- url: https://ccdi.treehouse.gi.ucsc.edu/api/v0
-  description: UCSC Treehouse CCDI API server
-- url: https://ccdi.kidsfirstdrc.org/api/v0
-  description: KidsFirst CCDI API server
+  - url: https://federation-dev.ccdi.cancer.gov/api/v0
+    description: Federation CCDI API Aggregation server
 paths:
   /subject:
     get:
