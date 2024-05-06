@@ -3751,14 +3751,14 @@ components:
           description: The errors within this response.
     responses.File:
       allOf:
-      - $ref: '#/components/schemas/models.File'
       - type: object
+        properties:
+          source:
+            type: string
+            description: |-
+              A reference to a Federation Node.
+      - $ref: '#/components/schemas/models.File'
       description: A response representing a single [`File`](models::File).
-      properties:
-        source:
-          type: string
-          description: |-
-            A reference to a Federation Node.
     responses.Files:
       type: object
       description: |-
@@ -3832,14 +3832,14 @@ components:
       description: A response for describing organizations.
     responses.Sample:
       allOf:
-      - $ref: '#/components/schemas/models.Sample'
       - type: object
+        properties:
+          source:
+            type: string
+            description: |-
+              A reference to a Federation Node.
+      - $ref: '#/components/schemas/models.Sample'
       description: A response representing a single [`Sample`](models::Sample).
-      properties:
-        source:
-          type: string
-          description: |-
-            A reference to a Federation Node.
     responses.Samples:
       type: object
       description: |-
@@ -3881,14 +3881,14 @@ components:
             $ref: '#/components/schemas/models.gateway.Named'
     responses.Subject:
       allOf:
-      - $ref: '#/components/schemas/models.Subject'
       - type: object
+        properties:
+          source:
+            type: string
+            description: |-
+              A reference to a Federation Node.
+      - $ref: '#/components/schemas/models.Subject'
       description: A response representing a single [`Subject`](models::Subject).
-      properties:
-        source:
-          type: string
-          description: |-
-            A reference to a Federation Node.
     responses.Subjects:
       type: object
       description: |-
