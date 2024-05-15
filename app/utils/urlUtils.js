@@ -1,11 +1,11 @@
-const startApiUrl = "/api/v0/";
+const startApiUrl = "/api/v";//we do not validate the version
 const arrayEndpoints = ["subject", "sample", "file", "info", "metadata","namespace","organization"];
 const mapSources = new Map([["pedscommons", "UChicago"], ["stjude", "StJude"], ["ucsc", "UCSC"], ["chop", "CHOP"]]);
 // TODO read above endpoints from YAML
 let errTemplate404 = '{"errors": [{"kind": "InvalidRoute", "method": "GET", "route": "", "message":"The requested URL was not found."}]}';
 let errTemplateTimeout = '{"errors": [{"kind": "RequestTimeout", "method": "GET", "route": "", "message":"Request Timeout."}]}';
 
-const validEndpointStart = arrayEndpoints.map(i => startApiUrl + i);
+//const validEndpointStart = arrayEndpoints.map(i => startApiUrl + i);//this to create URL beginnings with startApiUrl
 function getDomain (strHostName) {
 
     var domain = strHostName;
@@ -23,11 +23,11 @@ function getDomain (strHostName) {
     return domain;
 }
 function validEndpoint (str) {
-    // returns true if str starts with "/api/v0/<endpoint>"
+    // heuristic: returns true if str starts with "/api/v" and contains an expected <endpoint>
     let resValid = false;
     if (str != null) {
         if (str.startsWith(startApiUrl)) {
-            if (new RegExp(validEndpointStart.join("|")).test(str)) {
+            if (new RegExp(arrayEndpoints.join("|")).test(str)) {
                 resValid = true;
             }
         }
