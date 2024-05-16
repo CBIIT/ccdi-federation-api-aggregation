@@ -22,17 +22,31 @@ function getDomain (strHostName) {
     
     return domain;
 }
-function validEndpoint (str) {
-    // heuristic: returns true if str starts with "/api/v" and contains an expected <endpoint>
-    let resValid = false;
-    if (str != null) {
-        if (str.startsWith(startApiUrl)) {
-            if (new RegExp(arrayEndpoints.join("|")).test(str)) {
-                resValid = true;
-            }
-        }
-    }
-    return resValid;
+//older version
+// function validEndpoint (str) {
+//     // heuristic: returns true if str starts with "/api/v" and contains an expected <endpoint>
+//     let resValid = false;
+//     if (str != null) {
+//         if (str.startsWith(startApiUrl)) {
+//             if (new RegExp(arrayEndpoints.join("|")).test(str)) {
+//                 resValid = true;
+//             }
+//         }
+//     }
+//     return resValid;
+// }
+function validEndpoint(str){
+    return [
+        /^\/api\/v[0-9]+\/subject/,
+        /^\/api\/v[0-9]+\/sample/,
+        /^\/api\/v[0-9]+\/file/,
+        /^\/api\/v[0-9]+\/organization/,
+        /^\/api\/v[0-9]+\/info/,
+        /^\/api\/v[0-9]+\/namespace/,
+        /^\/api\/v[0-9]+\/metadata/
+    ].some(function(regexp){
+        return regexp.test(str);
+    });
 }
 function concatArray(res) {
     //res expected is an object array of arrays
