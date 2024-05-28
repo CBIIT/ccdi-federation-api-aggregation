@@ -78,7 +78,7 @@ for(var i = 0; i < apiHosts.length;i++){
     optionsPedscommons.host = apiHosts[i];
   else if (apiHosts[i].includes("stjude"))
     optionsStjude.host = apiHosts[i];    
-  else if (apiHosts[i].includes("chop"))
+  else if (apiHosts[i].includes("kidsfirst"))
     optionsChop.host = apiHosts[i];
   else if (apiHosts[i].includes("treehouse"))
     optionsTreehouse.host = apiHosts[i];
@@ -177,15 +177,11 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
 
 function aggregateRequests(urlPath) {
   let toAggregate = [];
+  let addSourceToResponse = true;//add 'source' attribute to endpont responses
   //collect Promises from getresultHttp
   if (optionsChop.host !== undefinedHost) {
-    let urlTemp = urlPath;//TODO remove when the server is fixed
-    if (urlPath.startsWith("/api/v0/")) {
-      urlTemp = urlPath.replace("/api/v0/", "/chop-ccdi-api-dev/api/");
-    }   
-    toAggregate.push(getresultHttp(optionsChop, urlTemp, http, true));
-  } 
-  let addSourceToResponse = true;//add 'source' attribute to endpont responses
+    toAggregate.push(getresultHttp(optionsChop, urlPath, https, addSourceToResponse));
+  }
   if (optionsPedscommons.host !== undefinedHost)
     toAggregate.push(getresultHttp(optionsPedscommons, urlPath, https, addSourceToResponse));
   if (optionsTreehouse.host !== undefinedHost)
