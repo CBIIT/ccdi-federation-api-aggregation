@@ -1,6 +1,6 @@
 const startApiUrl = "/api/v";//we do not validate the version
 const arrayEndpoints = ["subject", "sample", "file", "info", "metadata","namespace","organization"];
-const mapSources = new Map([["pedscommons", "UChicago"], ["stjude", "StJude"], ["ucsc", "UCSC"], ["chop", "CHOP"]]);
+const mapSources = new Map([["pedscommons", "UChicago"], ["stjude", "StJude"], ["ucsc", "UCSC"], ["kidsfirst", "CHOP"]]);
 // TODO read above endpoints from YAML
 let errTemplate404 = '{"errors": [{"kind": "InvalidRoute", "method": "GET", "route": "", "message":"The requested URL was not found."}]}';
 let errTemplateTimeout = '{"errors": [{"kind": "RequestTimeout", "method": "GET", "route": "", "message":"Request Timeout."}]}';

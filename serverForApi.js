@@ -143,11 +143,17 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
     options.path = urlPath;
     const req = proto.request(options, (res) => {
       //console.log("info", "statusCode: ", res.statusCode); // <======= Here's the status code
-      //console.log("debug", "headers: ", res.headers);
+      //console.log("debug", "headers", JSON.stringify(res.headers));
       res.on('data', chunk => {
         chunks+= chunk;
       });
       res.on('end', () => {
+        //filter our responses with text/html body
+        let strContentType = res.headers["content-type"];
+        if ((strContentType != null) && (strContentType.includes("text/html"))) {
+          console.error("error", options.host, res.statusCode, "HTML received", chunks);
+          chunks = urlUtils.getErrorStr404(urlPath);
+        }
         try {
           if (addSourceInfo) //this is until added to original federation responses
             chunks = urlUtils.addSourceAttr(chunks,options,urlPath);
