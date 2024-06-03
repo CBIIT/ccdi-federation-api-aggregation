@@ -71,6 +71,7 @@ function findRequestSource(strHost) {
 }
 function addSourceAttr(strJson, options, urlPath=startApiUrl) {
     strJson = strJson.trimStart();
+    console.log("info", "response from", options.host, urlPath);
     //aggregation adds "source" attribute to all entries which are not arrays
     //source values are searched based on domains
     if (strJson.startsWith ('{')) {
@@ -81,12 +82,12 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
         return ('{"source":"' + strSource + '",\n ' + strJson.slice(1));
     }
     else if ((!strJson) || (strJson === "")) {
-        console.log("info", "addSourceAttr empty parameter strJson");
+        console.log("info", options.host, "addSourceAttr empty parameter strJson");
         let strSource = findRequestSource(options.host);//if source not found use host
         return ('{"source":"' + strSource+ '"}\n');
     }
     else {
-        console.log("info", "addSourceAttr not added to strJson of type ", typeof(strJson), '"' + strJson + '"');
+        console.log("info", options.host, "addSourceAttr not added to strJson of type ", typeof(strJson), '"' + strJson + '"');
         return strJson;
     }
 }

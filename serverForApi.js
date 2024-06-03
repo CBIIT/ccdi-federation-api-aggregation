@@ -100,7 +100,7 @@ function responseLength(strResponse) {//expects a string parameter
 
 const server = http.createServer((req, res) => {
   const urlPath = req.url;
-  console.log("info", 'request with urlPath: ', urlPath);
+  console.log("info", 'request urlPath: ', urlPath);
   if (!urlPath || (urlPath.length == 0) || (urlPath === '/')) {
     let data = 'CCDI Federation API Aggregation Layer';
     res.writeHead(200, addResponseHeaders(responseLength(data), 'text/plain'));
@@ -127,10 +127,11 @@ const server = http.createServer((req, res) => {
     res.end(data); 
   }//TODO more checks for valid URL Path
   else {//try to aggregate
-    console.log("info", "aggregate results request: ", urlPath);
+    console.log("info", "aggregate responses for", urlPath);
     aggregateResults(urlPath).then(data => {
      let strRes = urlUtils.concatArray(data);
      res.writeHead(200, addResponseHeaders(responseLength(strRes)));
+     console.log("info", "aggregated responses for", urlPath);
      res.end(strRes);
     });
   }
@@ -144,6 +145,7 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
     const req = proto.request(options, (res) => {
       //console.log("info", "statusCode: ", res.statusCode); // <======= Here's the status code
       //console.log("debug", "headers", JSON.stringify(res.headers));
+      console.log("info", 'request to', optionsNode.host, urlPath);
       res.on('data', chunk => {
         chunks+= chunk;
       });
