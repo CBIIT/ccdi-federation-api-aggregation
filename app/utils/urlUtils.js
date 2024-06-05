@@ -3,7 +3,8 @@ const arrayEndpoints = ["subject", "sample", "file", "info", "metadata","namespa
 const mapSources = new Map([["pedscommons", "UChicago"], ["stjude", "StJude"], ["ucsc", "UCSC"], ["kidsfirst", "CHOP"]]);
 // TODO read above endpoints from YAML
 let errTemplate404 = '{"errors": [{"kind": "InvalidRoute", "method": "GET", "route": "", "message":"The requested URL was not found."}]}';
-let errTemplateTimeout = '{"errors": [{"kind": "RequestTimeout", "method": "GET", "route": "", "message":"Request Timeout."}]}';
+let errTemplateTimeout = '{"errors": [{"kind": "NotFound", "method": "GET", "route": "", "message":"Request Timeout."}]}';
+let errTemplateServer500 = '{"errors": [{"kind": "NotFound", "method": "GET", "route": "", "message":"Server Error."}]}';
 
 //const validEndpointStart = arrayEndpoints.map(i => startApiUrl + i);//this to create URL beginnings with startApiUrl
 function getDomain (strHostName) {
@@ -97,6 +98,12 @@ function getErrorStr404(strUrl) {
 	obj404.errors[0].route = strUrl;
 	return JSON.stringify(obj404);
 }
+function getErrorStr500(strUrl) {
+	//returns server error error string
+	var objErr = JSON.parse(errTemplateServer500);
+	objErr.errors[0].route = strUrl;
+	return JSON.stringify(objErr);
+}
 function getErrorStrTimeout(strUrl) {
 	//returns timeout error string
 	var objTimeout = JSON.parse(errTemplateTimeout);
@@ -110,5 +117,6 @@ module.exports = {
     findRequestSource,
     addSourceAttr,
     getErrorStr404,
-    getErrorStrTimeout
+    getErrorStrTimeout,
+    getErrorStr500
 };
