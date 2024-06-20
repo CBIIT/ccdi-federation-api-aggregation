@@ -152,7 +152,7 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
       res.on('end', () => {
         //filter our responses with text/html body
         let strContentType = res.headers["content-type"];
-        if ((strContentType != null) && (strContentType.includes("text/html"))) {
+        if ((res.statusCode < 500) && (strContentType != null) &&(strContentType.includes("text/html"))) {
           console.error("error", options.host, res.statusCode, "HTML received", chunks);
           chunks = urlUtils.getErrorStr404(urlPath);
         }
