@@ -335,7 +335,7 @@ info:
     
     ### CCDI Data Federation Resource
 
-    To access CCDI Data Federation Resource please click [here](https://cbiit.github.io/ccdi-federation-api/).
+    To access Individual Nodes please click [here](https://cbiit.github.io/ccdi-federation-api/).
   contact:
     name: Childhood Cancer Data Initiative support email
     email: NCIChildhoodCancerDataInitiative@mail.nih.gov
