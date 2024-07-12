@@ -1,10 +1,10 @@
 openapi: 3.0.3
 info:
-  title: CCDI Data Federation API Nodes Aggregation
+  title: CCDI Data Federation Resource API
   description: |
     ## Overview
 
-    The Childhood Cancer Data Initiative (CCDI) Data Federation API aggregation supports the
+    The Childhood Cancer Data Initiative (CCDI) Data Federation Resource API supports the
     querying of federated pediatric cancer within the broader community. The goal
     of the API is to support identification of pediatric cancer samples of interest
     via a variety of query parameters.
@@ -333,9 +333,9 @@ info:
     to include information that is deemed contextually relevant at the discretion of
     the curation team.
     
-    ### CCDI Data Federation Resource
+    ### CCDI Data Federation Participating Nodes API Access
 
-    To access Individual Nodes please click [here](https://cbiit.github.io/ccdi-federation-api/).
+    To access CCDI Data Federation Participating Nodes API, please click [here](https://cbiit.github.io/ccdi-federation-api/).
   contact:
     name: Childhood Cancer Data Initiative support email
     email: NCIChildhoodCancerDataInitiative@mail.nih.gov
