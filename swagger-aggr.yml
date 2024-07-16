@@ -699,11 +699,11 @@ paths:
         required: false
         schema:
           type: string
-      - name: tumor_classification
+      - name: age_at_diagnosis
         in: query
         description: |-
-          Matches any sample where the `tumor_classification` field matches the
-          string provided.
+          Matches any sample where the `age_at_diagnosis` field matches the string
+          provided.
         required: false
         schema:
           type: string
