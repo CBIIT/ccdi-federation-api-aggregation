@@ -3829,14 +3829,28 @@ components:
         data:
           $ref: '#/components/schemas/responses.info.data.Information'
     responses.Namespace:
-      $ref: '#/components/schemas/models.Namespace'
+      allOf:
+      - type: object
+        properties:
+          source:
+            type: string
+            description: |-
+              A reference to a Federation Node.
+      - $ref: '#/components/schemas/models.Namespace'
     responses.Namespaces:
       type: array
       items:
         $ref: '#/components/schemas/models.Namespace'
       description: A response for describing namespaces.
     responses.Organization:
-      $ref: '#/components/schemas/models.Organization'
+      allOf:
+      - type: object
+        properties:
+          source:
+            type: string
+            description: |-
+              A reference to a Federation Node.
+      - $ref: '#/components/schemas/models.Organization'
     responses.Organizations:
       type: array
       items:
