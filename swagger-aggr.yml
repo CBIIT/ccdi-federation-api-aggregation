@@ -341,8 +341,8 @@ info:
     email: NCIChildhoodCancerDataInitiative@mail.nih.gov
   version: v1.0.0
 servers:
-  - url: https://federation-qa.ccdi.cancer.gov/api/v1
-    description: Federation CCDI API Aggregation QA server
+  - url: https://federation.ccdi.cancer.gov/api/v1
+    description: CCDI Data Federation Resource API server
 paths:
   /subject:
     get:
