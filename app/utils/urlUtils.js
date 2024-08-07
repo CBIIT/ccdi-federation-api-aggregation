@@ -1,6 +1,7 @@
 const startApiUrl = "/api/v";//we do not validate the version
 const arrayEndpoints = ["subject", "sample", "file", "info", "metadata","namespace","organization"];
-const mapSources = new Map([["pedscommons", "UChicago"], ["stjude", "StJude"], ["ucsc", "UCSC"], ["kidsfirst", "CHOP"]]);
+//const mapSources = new Map([["pedscommons", "UChicago"], ["stjude", "StJude"], ["ucsc", "UCSC"], ["kidsfirst", "CHOP"]]);
+const mapSources = new Map([["pedscommons", "PCDC"], ["stjude", "StJude"], ["ucsc", "Treehouse"], ["kidsfirst", "KidsFirst"]]);
 // TODO read above endpoints from YAML
 let errTemplate404 = '{"errors": [{"kind": "InvalidRoute", "method": "GET", "route": "", "message":"The requested URL was not found."}]}';
 let errTemplateTimeout = '{"errors": [{"kind": "NotFound", "method": "GET", "route": "", "message":"Request Timeout."}]}';
@@ -88,7 +89,7 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
         return ('{"source":"' + strSource+ '"}\n');
     }
     else {
-        console.log("info", options.host, "addSourceAttr not added to strJson of type ", typeof(strJson), '"' + strJson + '"');
+        //console.log("debug", options.host, "addSourceAttr not added to strJson of type ", typeof(strJson), '"' + strJson + '"');
         return strJson;
     }
 }
