@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2023, FNLCR - All rights reserved.
 */
+require('newrelic');
 const http = require("http");
 const https = require("https");
 const process = require("process");
