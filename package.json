@@ -34,14 +34,14 @@
   "homepage": "https://github.com/CBIIT/ccdi-federation-api-aggregation#readme",
   "dependencies": {
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
+    "express": ">=4.21.0",
     "fs": "^0.0.1-security",
     "http": "^0.0.1-security",
     "https": "^1.0.0",
+    "newrelic": "latest",
     "process": "^0.11.10",
     "psl": "^1.9.0",
-    "sanitize": "^2.1.2",
-    "newrelic": "latest"
+    "sanitize": "^2.1.2"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
