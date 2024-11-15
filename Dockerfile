@@ -11,6 +11,9 @@ FROM node:21.7.3-alpine3.19 AS fnl_base_image
 #RUN apk update
 #RUN apk upgrade
 
+## Update Alpine busybox
+RUN apk update && apk upgrade busybox
+
 # ENV federation_apis=${federation_apis}
 
 # Use production node environment by default.
