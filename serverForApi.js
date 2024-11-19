@@ -72,7 +72,7 @@ console.log("info", apiHosts, __dirname);
 var apiVersionEnv = process.env.API_VERSION;
 var projectEnv = process.env.PROJECT;
 var tierEnv = process.env.tier;
-console.log("info environment: PROJECT", projectEnv, ", API_VERSION", apiVersionEnv, ", tier", tierEnv);
+console.log("info",  "environment: PROJECT", projectEnv, ", API_VERSION", apiVersionEnv, ", tier", tierEnv);
 
 for(var i = 0; i < apiHosts.length;i++){
   if (apiHosts[i].includes("pedscommons"))
@@ -101,14 +101,14 @@ function responseLength(strResponse) {//expects a string parameter
 
 const server = http.createServer((req, res) => {
   const urlPath = req.url;
-  console.log("info", 'request urlPath: ', urlPath);
+  console.log("info", 'resource request urlPath:', urlPath);
   if (!urlPath || (urlPath.length == 0) || (urlPath === '/')) {
-    let data = 'CCDI Federation API Aggregation Layer';
+    let data = 'CCDI Federation Resource API';
     res.writeHead(200, addResponseHeaders(responseLength(data), 'text/plain'));
     res.end(data);
   }
   else if (urlPath == "/welcome") {
-    let data = 'Welcome to CCDI Federation API Aggregation';
+    let data = 'Welcome to CCDI Federation Resource API';
     res.writeHead(200, addResponseHeaders(responseLength(data), 'text/plain'));
     res.end(data);
   } 
@@ -128,11 +128,11 @@ const server = http.createServer((req, res) => {
     res.end(data); 
   }//TODO more checks for valid URL Path
   else {//try to aggregate
-    console.log("info", "aggregate responses for", urlPath);
+    console.log("info", "started aggregate responses for", urlPath);
     aggregateResults(urlPath).then(data => {
      let strRes = urlUtils.concatArray(data);
      res.writeHead(200, addResponseHeaders(responseLength(strRes)));
-     console.log("info", "aggregated responses for", urlPath);
+     console.log("info", "resource response for", urlPath);
      res.end(strRes);
     });
   }
@@ -169,7 +169,7 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
             chunks = urlUtils.addSourceAttr(chunks,options,urlPath);
           resolve(chunks);
         } catch (err) {
-          console.error("error", 'error res.on getresultHttp: ', options.host, err.message);
+          console.error("error", 'error res.on in getresultHttp from host:', options.host, err.message);
           console.error(err);
           //errorJson.message = err.message;       
           resolve(urlUtils.addSourceAttr(err.message,options,urlPath));
@@ -177,14 +177,14 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
       });
     });
     req.on('timeout', () => {
-        console.error("error", 'timeout: ', options.host);
+        console.error("error", 'timeout from host:', options.host);
         let dataTimeout = urlUtils.getErrorStrTimeout(urlPath, urlUtils.findRequestSource(options.host));
         dataTimeout = urlUtils.addSourceAttr(dataTimeout,options,urlPath);
         resolve(dataTimeout);
         req.destroy();
     });
     req.on('error', err => {
-      console.error("error", 'error req: ', options.host, err.message);
+      console.error("error", 'error from host:', options.host, err.message);
       resolve(urlUtils.addSourceAttr(err.message,options,urlPath));
     });
     req.end();
