@@ -101,7 +101,7 @@ function responseLength(strResponse) {//expects a string parameter
 
 const server = http.createServer((req, res) => {
   const urlPath = req.url;
-  console.log("info", 'resource request urlPath:', urlPath);
+  console.log("info", "server="+"resource", '"request received"', "endpoint="+urlPath);
   if (!urlPath || (urlPath.length == 0) || (urlPath === '/')) {
     let data = 'CCDI Federation Resource API';
     res.writeHead(200, addResponseHeaders(responseLength(data), 'text/plain'));
@@ -124,15 +124,16 @@ const server = http.createServer((req, res) => {
   } 
   else if (! urlUtils.validEndpoint(urlPath)) {
     let data = urlUtils.getErrorStr404(urlPath);
+    console.error("error", "server="+"resource", '"response HTTP 404 invalid"', "endpoint="+urlPath);
     res.writeHead(404, addResponseHeaders(responseLength(data)));
     res.end(data); 
   }//TODO more checks for valid URL Path
   else {//try to aggregate
-    console.log("info", "started aggregate responses for", urlPath);
+    console.log("info", '"aggregate responses started"', "endpoint="+urlPath);
     aggregateResults(urlPath).then(data => {
      let strRes = urlUtils.concatArray(data);
      res.writeHead(200, addResponseHeaders(responseLength(strRes)));
-     console.log("info", "resource response for", urlPath);
+     console.log("info", "server="+"resource", '"response HTTP 200 OK"', "endpoint="+urlPath);
      res.end(strRes);
     });
   }
@@ -146,7 +147,7 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
     const req = proto.request(options, (res) => {
       //console.log("info", "statusCode: ", res.statusCode); // <======= Here's the status code
       //console.log("debug", "headers", JSON.stringify(res.headers));
-      console.log("info", 'request to', optionsNode.host, urlPath);
+      console.log("info", '"request to"', "server="+optionsNode.host, "endpoint="+urlPath);
       res.on('data', chunk => {
         chunks+= chunk;
       });
@@ -154,14 +155,15 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
         //filter our responses with text/html body
         let strContentType = res.headers["content-type"];
         if ((res.statusCode < 500) && (strContentType != null) &&(strContentType.includes("text/html"))) {
-          console.error("error", options.host, res.statusCode, "HTML received", chunks);
+          console.error("error", "server="+options.host, "status="+res.statusCode, "endpoint="+urlPath, '"HTML received"', chunks);
+          console.error("error", "resource generated on HTTP response 404", "server="+options.host, "endpoint="+urlPath);
           chunks = urlUtils.getErrorStr404(urlPath);
         }
         //replace non-json responses with error json
         if ((res.statusCode >= 500) && 
           ((strContentType != null) && (! strContentType.includes("application/json")) || 
           (! strContentType))) {
-          console.error("error", options.host, res.statusCode, "Server Error received", chunks);
+          console.error("error", "server="+options.host, "status="+res.statusCode, "Server Error received", chunks);
           chunks = urlUtils.getErrorStr500(urlPath);
         }
         try {
@@ -169,7 +171,7 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
             chunks = urlUtils.addSourceAttr(chunks,options,urlPath);
           resolve(chunks);
         } catch (err) {
-          console.error("error", 'error res.on in getresultHttp from host:', options.host, err.message);
+          console.error("error", '"error res.on in getresultHttp from host"', "server="+options.host, "message="+err.message);
           console.error(err);
           //errorJson.message = err.message;       
           resolve(urlUtils.addSourceAttr(err.message,options,urlPath));
@@ -177,14 +179,14 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
       });
     });
     req.on('timeout', () => {
-        console.error("error", 'timeout from host:', options.host);
+        console.error("error", '"timeout from host"', "server="+options.host);
         let dataTimeout = urlUtils.getErrorStrTimeout(urlPath, urlUtils.findRequestSource(options.host));
         dataTimeout = urlUtils.addSourceAttr(dataTimeout,options,urlPath);
         resolve(dataTimeout);
         req.destroy();
     });
     req.on('error', err => {
-      console.error("error", 'error from host:', options.host, err.message);
+      console.error("error", '"error from host"', "server="+options.host, "message="+err.message);
       resolve(urlUtils.addSourceAttr(err.message,options,urlPath));
     });
     req.end();
@@ -212,7 +214,6 @@ function aggregateRequests(urlPath) {
   //return Promise.all([requestChop]);
 }
 async function aggregateResults(urlPath){
-  //console.log("info", 'aggregateResults started:', urlPath);
   //this is a direct test
   //return res = await getresultHttp(optionsChop, urlPath);//this works
   return res = await aggregateRequests(urlPath);
