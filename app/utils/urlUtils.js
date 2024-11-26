@@ -3,9 +3,9 @@ const arrayEndpoints = ["subject", "sample", "file", "info", "metadata","namespa
 //const mapSources = new Map([["pedscommons", "UChicago"], ["stjude", "StJude"], ["ucsc", "UCSC"], ["kidsfirst", "CHOP"]]);
 const mapSources = new Map([["pedscommons", "PCDC"], ["stjude", "StJude"], ["ucsc", "Treehouse"], ["kidsfirst", "KidsFirst"]]);
 // TODO read above endpoints from YAML
-let errTemplate404 = '{"errors": [{"kind": "InvalidRoute", "method": "GET", "route": "", "message":"The requested URL was not found."}]}';
-let errTemplateTimeout = '{"errors": [{"kind": "NotFound", "method": "GET", "route": "", "message":"Request Timeout."}]}';
-let errTemplateServer500 = '{"errors": [{"kind": "NotFound", "method": "GET", "route": "", "message":"Server Error."}]}';
+let errTemplate404 = '{"errors": [{"kind": "InvalidRoute", "method": "GET", "route": "/api", "message":"The requested URL was not found."}]}';
+let errTemplateTimeout = '{"errors": [{"kind": "NotFound", "method": "GET", "route": "/api", "message":"Request Timeout."}]}';
+let errTemplateServer500 = '{"errors": [{"kind": "NotFound", "method": "GET", "route": "/api", "message":"Server Error."}]}';
 
 //const validEndpointStart = arrayEndpoints.map(i => startApiUrl + i);//this to create URL beginnings with startApiUrl
 function getDomain (strHostName) {
@@ -73,7 +73,7 @@ function findRequestSource(strHost) {
 }
 function addSourceAttr(strJson, options, urlPath=startApiUrl) {
     strJson = strJson.trimStart();
-    console.log("info", "response from", options.host, urlPath);
+    console.log("info", '"response received"', "server="+options.host, urlPath);
     //aggregation adds "source" attribute to all entries which are not arrays
     //source values are searched based on domains
     if (strJson.startsWith ('{')) {
@@ -84,7 +84,7 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
         return ('{"source":"' + strSource + '",\n ' + strJson.slice(1));
     }
     else if ((!strJson) || (strJson === "")) {
-        console.log("info", options.host, "addSourceAttr empty parameter strJson");
+        console.log("info", "server="+options.host, '"addSourceAttr empty parameter strJson"');
         let strSource = findRequestSource(options.host);//if source not found use host
         return ('{"source":"' + strSource+ '"}\n');
     }
@@ -96,19 +96,21 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
 function getErrorStr404(strUrl) {
 	//returns 404 error string
 	var obj404 = JSON.parse(errTemplate404);
-	obj404.errors[0].route = strUrl;
+	//obj404.errors[0].route = strUrl;
 	return JSON.stringify(obj404);
 }
 function getErrorStr500(strUrl) {
 	//returns server error error string
 	var objErr = JSON.parse(errTemplateServer500);
-	objErr.errors[0].route = strUrl;
+	console.error("error", '"resource receivd HTTP response 500"', "endpoint="+strUrl);
+	//objErr.errors[0].route = strUrl;
 	return JSON.stringify(objErr);
 }
 function getErrorStrTimeout(strUrl) {
 	//returns timeout error string
 	var objTimeout = JSON.parse(errTemplateTimeout);
-	objTimeout.errors[0].route = strUrl;
+	console.error("error", '"resource received HTTP request timeout"', "endpoint="+strUrl);
+	//objTimeout.errors[0].route = strUrl;
 	return JSON.stringify(objTimeout);
 }
 module.exports = {
