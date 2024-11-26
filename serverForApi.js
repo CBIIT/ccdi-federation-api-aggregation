@@ -46,7 +46,7 @@ var optionsChop = {
   headers: {
     Accept: 'application/json',
   },
-  timeout: 4000
+  timeout: 9000
 };
 var optionsStjude = {
   host: undefinedHost,
