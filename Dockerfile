@@ -15,6 +15,9 @@ FROM node:21.7.3-alpine3.19 AS fnl_base_image
 
 # Use production node environment by default.
 ENV NODE_ENV production
+ENV NEW_RELIC_NO_CONFIG_FILE=true
+ENV NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
+ENV NEW_RELIC_LOG=stdout
 
 WORKDIR /usr/src/app
 

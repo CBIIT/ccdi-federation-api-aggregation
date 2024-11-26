@@ -40,7 +40,8 @@
     "https": "^1.0.0",
     "process": "^0.11.10",
     "psl": "^1.9.0",
-    "sanitize": "^2.1.2"
+    "sanitize": "^2.1.2",
+    "newrelic": "latest"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
