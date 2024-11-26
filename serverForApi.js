@@ -159,6 +159,11 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
           console.error("error", "resource generated on HTTP response 404", "server="+options.host, "endpoint="+urlPath);
           chunks = urlUtils.getErrorStr404(urlPath);
         }
+        else if ((res.statusCode < 500) && (res.statusCode > 200)) {
+          //not OK response from Federation Node to be logged to console
+          //this include not implemented responses which can be expected.
+          console.error("error", "server="+options.host, "status="+res.statusCode, "endpoint="+urlPath, '"Received not OK HTTP status code"', chunks);
+        }
         //replace non-json responses with error json
         if ((res.statusCode >= 500) && 
           ((strContentType != null) && (! strContentType.includes("application/json")) || 
@@ -166,12 +171,16 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
           console.error("error", "server="+options.host, "status="+res.statusCode, "Server Error received", chunks);
           chunks = urlUtils.getErrorStr500(urlPath);
         }
+        else if (res.statusCode >= 500) {
+          //Federation Node server error response to be logged to console
+          console.error("error", "server="+options.host, "status="+res.statusCode, "endpoint="+urlPath, '"Received server error HTTP status code"', chunks);
+        }
         try {
           if (addSourceInfo) //this is until added to original federation responses
             chunks = urlUtils.addSourceAttr(chunks,options,urlPath);
           resolve(chunks);
         } catch (err) {
-          console.error("error", '"error res.on in getresultHttp from host"', "server="+options.host, "message="+err.message);
+          console.error("error", "server="+options.host, "message="+err.message, '"error res.on in getresultHttp from host"');
           console.error(err);
           //errorJson.message = err.message;       
           resolve(urlUtils.addSourceAttr(err.message,options,urlPath));
