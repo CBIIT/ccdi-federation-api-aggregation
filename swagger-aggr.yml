@@ -19,7 +19,7 @@ info:
   contact:
     name: Childhood Cancer Data Initiative support email
     email: NCIChildhoodCancerDataInitiative@mail.nih.gov
-  version: v1.1.0
+  version: v1.1.1
 servers:
   - url: https://federation.ccdi.cancer.gov/api/v1
     description: CCDI Data Federation Resource API server
@@ -1537,9 +1537,7 @@ components:
         determined by the investigator." In particular, this field does not dictate
         the time period: whether it represents sex at birth, sex at sample
         collection, or any other determined time point. Further, the descriptions
-        for F and M suggest that this term can represent either biological sex,
-        cultural gender roles, or both. Thus, this field cannot be assumed to
-        strictly represent biological sex.
+        for F and M suggest that this term can represent biological sex.
 
         Link:
         <https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=CDEDD.ITEM_ID=6343385%20and%20ver_nr=1>
