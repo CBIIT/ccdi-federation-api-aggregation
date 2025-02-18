@@ -1,3 +1,6 @@
+/*
+Copyright (c) 2025, FNLCR - All rights reserved.
+*/
 const startApiUrl = "/api/v";//we do not validate the version
 const arrayEndpoints = ["subject", "sample", "file", "info", "metadata","namespace","organization"];
 //const mapSources = new Map([["pedscommons", "UChicago"], ["stjude", "StJude"], ["ucsc", "UCSC"], ["kidsfirst", "CHOP"]]);

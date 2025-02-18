@@ -6,8 +6,9 @@ const http = require("http");
 const https = require("https");
 const process = require("process");
 const fs = require('fs');
+const url = require('url');
 const urlUtils = require("./app/utils/urlUtils");
-
+const specUtils = require("./app/utils/specUtils");
 //certificates are not used, defined by setting rejectUnauthorized
 // const caTreehouse = [fs.readFileSync("./treehouse-cer.pem")];
 // const caPedscommons = [fs.readFileSync("./ccdifederation-pedscommons-org.pem")];
@@ -85,6 +86,8 @@ for(var i = 0; i < apiHosts.length;i++){
     optionsTreehouse.host = apiHosts[i];
 }
 
+specUtils.buildPathRegex();
+
 var regKidsFirst = new RegExp("Kid.*s.*First.*DRC");
 var contentTypeJson = "application/json; charset=utf-8";
 
@@ -101,6 +104,7 @@ function responseLength(strResponse) {//expects a string parameter
 
 const server = http.createServer((req, res) => {
   const urlPath = req.url;
+  const reqUrl = url.parse(urlPath, true);
   console.log("info", "server="+"resource", '"request received"', "endpoint="+urlPath);
   if (!urlPath || (urlPath.length == 0) || (urlPath === '/')) {
     let data = 'CCDI Federation Resource API';
@@ -122,7 +126,8 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, addResponseHeaders(responseLength(data), 'application/json'));
     res.end(data);
   } 
-  else if (! urlUtils.validEndpoint(urlPath)) {
+  //else if (! urlUtils.validEndpoint(urlPath)) {
+  else if (! specUtils.matchPathToOpenApi(reqUrl.pathname)) {
     let data = urlUtils.getErrorStr404(urlPath);
     console.error("error", "server="+"resource", '"response HTTP 404 invalid"', "endpoint="+urlPath);
     res.writeHead(404, addResponseHeaders(responseLength(data)));
@@ -183,20 +188,20 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
           console.error("error", "server="+options.host, "message="+err.message, '"error res.on in getresultHttp from host"');
           console.error(err);
           //errorJson.message = err.message;       
-          resolve(urlUtils.addSourceAttr(err.message,options,urlPath));
+          resolve(urlUtils.addSourceAttr(urlUtils.getErrorStr500(urlPath), options, urlPath));
         };
       });
     });
     req.on('timeout', () => {
         console.error("error", '"timeout from host"', "server="+options.host);
-        let dataTimeout = urlUtils.getErrorStrTimeout(urlPath, urlUtils.findRequestSource(options.host));
+        let dataTimeout = urlUtils.getErrorStrTimeout(urlPath);
         dataTimeout = urlUtils.addSourceAttr(dataTimeout,options,urlPath);
         resolve(dataTimeout);
         req.destroy();
     });
     req.on('error', err => {
       console.error("error", '"error from host"', "server="+options.host, "message="+err.message);
-      resolve(urlUtils.addSourceAttr(err.message,options,urlPath));
+      resolve(urlUtils.addSourceAttr(urlUtils.getErrorStr500(urlPath)));
     });
     req.end();
   });
