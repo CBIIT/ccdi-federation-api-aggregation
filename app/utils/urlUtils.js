@@ -116,11 +116,44 @@ function getErrorStrTimeout(strUrl) {
 	//objTimeout.errors[0].route = strUrl;
 	return JSON.stringify(objTimeout);
 }
+//keys are URLs, values are source. We assume here that both parameters are arrays
+function mapHostToSource(keys, values) { 
+    const mapSources = new Map();
+    if (! keys) {
+        console.error("error", "API domain URLs are not defined.");
+        return mapSources;
+    }
+    if (! values) {
+        console.error("error", "Define API sources!!!");
+        //using findRequestSource from v.1.0.0
+        for (let i = 0; i < keys.length; i++) {
+            if (i < values.length) {
+                mapSources.set(keys[i], findRequestSource(keys[i]));
+            }
+        }
+    }
+    else {
+        if (keys.length !== values.length) {
+        console.error("error", "URL and Sources arrays are not the same length");
+        }
+
+        for (let i = 0; i < keys.length; i++) {
+            if (i < values.length) {
+                mapSources.set(keys[i], values[i]);
+            }
+            else {//use the key as a value
+                mapSources.set(keys[i], keys[i]);
+            }
+        }
+    }
+    console.info("info", "Hosts to Sources", mapSources);
+    return mapSources;
+}
 module.exports = {
     getDomain ,
     concatArray,
     validEndpoint,
-    findRequestSource,
+    mapHostToSource, 
     addSourceAttr,
     getErrorStr404,
     getErrorStrTimeout,

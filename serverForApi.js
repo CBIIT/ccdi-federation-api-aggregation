@@ -5,10 +5,12 @@ require('newrelic');
 const http = require("http");
 const https = require("https");
 const process = require("process");
-const fs = require('fs');
 const url = require('url');
 const urlUtils = require("./app/utils/urlUtils");
 const specUtils = require("./app/utils/specUtils");
+const strCpiRequest = "subject-mapping";
+const strSubjectRequest = "subject";
+
 //certificates are not used, defined by setting rejectUnauthorized
 // const caTreehouse = [fs.readFileSync("./treehouse-cer.pem")];
 // const caPedscommons = [fs.readFileSync("./ccdifederation-pedscommons-org.pem")];
@@ -17,78 +19,86 @@ const specUtils = require("./app/utils/specUtils");
 //var SERVER_HOST = "localhost";
 var SERVER_HOST = "0.0.0.0" //for container from docker
 
-var undefinedHost = "undefinedHost";
-var optionsTreehouse = {
+const undefinedHost = "undefinedHost";
+const optionsGeneral = {
   host: undefinedHost,
   //path: urlPath,
   method: 'GET',
   headers: {
     Accept: 'application/json',
   },
-  timeout: 4000,
-  rejectUnauthorized: false//,
-  //ca: caTreehouse
+  timeout: 9000,
+  rejectUnauthorized: false
 };
-var optionsPedscommons = {
-  host: undefinedHost,
-  //path: urlPath,
-  method: 'GET',
-  headers: {
-    Accept: 'application/json',
-  },
-  timeout: 4000,
-  rejectUnauthorized: false//,
-  //ca: caPedscommons
-};
-var optionsChop = {
-  host: undefinedHost,
-  //path: urlPath,
-  method: 'GET',
-  headers: {
-    Accept: 'application/json',
-  },
-  timeout: 9000
-};
-var optionsStjude = {
-  host: undefinedHost,
-  //path: urlPath,
-  method: 'GET',
-  headers: {
-    Accept: 'application/json',
-  },
-  timeout: 4000,
-  rejectUnauthorized: false//,
-  //ca: caStjude
-};
+
+const strCPIMock = JSON.stringify({supplementary_domains: [], participant_ids: 
+  [
+    {domain_name: "USI", participant_id: "PADJKU", 
+    associated_ids: [{participant_id: " PADJKU", domain_name: "USI", domain_category: "organizational_identifier"}]}, 
+    {domain_name: "USI", participant_id: "PAKZVD", 
+    associated_ids: [{participant_id: "COG_PAKZVD", 
+    domain_name: "PCDC", domain_category: "organizational_identifier"}, 
+    {participant_id: " PAKZVD", domain_name: "USI", domain_category: "organizational_identifier"}]}
+  ]}
+);
 // hosts registration is static for now
 // host are defined in env var federation_apis
 // as comma-separated domains without protocol: www.server1.com, abc.server2.com, vfr.frh.server3.com
 // expected are hosts from registered servers only
 var apiHosts = process.env.federation_apis.split(",");
+var apiSources = process.env.federation_sources.split(",");
 var serverHost = process.env.server_host;
 if (serverHost) {
   SERVER_HOST = serverHost;
 }
-console.log("info", apiHosts, __dirname);
+console.log("info", "federation_apis", apiHosts, __dirname);
+console.info("info", "federation_sources", apiSources);
+var apiHostSourceMap = urlUtils.mapHostToSource(apiHosts, apiSources);
+
+const startApiUrl = "/api/v";//we do not validate the version
+
+function addSourceAttr(strJson, options, urlPath=startApiUrl) {
+    strJson = strJson.trimStart();
+    console.log("info", '"response received"', "server="+options.host, urlPath);
+    //aggregation adds "source" attribute to all entries which are not arrays
+    if ((!strJson) || (strJson === "")) {
+      console.log("info", "server="+options.host, '"addSourceAttr empty parameter strJson"');
+      let strSource = apiHostSourceMap.get(options.host);//if source not found use host
+      return ('{"source":"' + strSource+ '"}\n');
+    }
+    else if ((strJson.startsWith ('{')) && (strJson.includes(":"))) {// json has at least one attribute
+      //add source
+      let strHost = options.host;
+      let strSource = apiHostSourceMap.get(strHost);//if source not found use host
+      return ('{"source":"' + strSource + '",\n ' + strJson.slice(1));
+    }
+    else if ((strJson.startsWith ('{')) && (!(strJson.includes(":")))) {// an empty json object
+      console.log("info", "server="+options.host, '"addSourceAttr an empty json object"');
+      let strSource = apiHostSourceMap.get(options.host);//if source not found use host
+      return ('{"source":"' + strSource+ '"}\n');
+    }
+    else {//array
+        //console.log("debug", options.host, "addSourceAttr not added to strJson of type ", typeof(strJson), '"' + strJson + '"');
+        return strJson;
+    }
+}
+
 var apiVersionEnv = process.env.API_VERSION;
 var projectEnv = process.env.PROJECT;
 var tierEnv = process.env.tier;
 console.log("info",  "environment: PROJECT", projectEnv, ", API_VERSION", apiVersionEnv, ", tier", tierEnv);
-
+let federatedOptions = []; //HTTP options array for federation nodes calls
 for(var i = 0; i < apiHosts.length;i++){
-  if (apiHosts[i].includes("pedscommons"))
-    optionsPedscommons.host = apiHosts[i];
-  else if (apiHosts[i].includes("stjude"))
-    optionsStjude.host = apiHosts[i];    
-  else if (apiHosts[i].includes("kidsfirst"))
-    optionsChop.host = apiHosts[i];
-  else if (apiHosts[i].includes("treehouse"))
-    optionsTreehouse.host = apiHosts[i];
+  var optionsForNode = structuredClone(optionsGeneral); //create a new options object
+  optionsForNode.host = apiHosts[i];
+  federatedOptions.push(optionsForNode);
 }
+// federatedOptions.forEach(element => {
+//   console.debug("debug", federatedOptions element", element);
+// });
 
 specUtils.buildPathRegex();
 
-var regKidsFirst = new RegExp("Kid.*s.*First.*DRC");
 var contentTypeJson = "application/json; charset=utf-8";
 
 function addResponseHeaders (strResLength, strContent=contentTypeJson) {
@@ -136,10 +146,18 @@ const server = http.createServer((req, res) => {
   else {//try to aggregate
     console.log("info", '"aggregate responses started"', "endpoint="+urlPath);
     aggregateResults(urlPath).then(data => {
-     let strRes = urlUtils.concatArray(data);
-     res.writeHead(200, addResponseHeaders(responseLength(strRes)));
-     console.log("info", "server="+"resource", '"response HTTP 200 OK"', "endpoint="+urlPath);
-     res.end(strRes);
+      let strRes = urlUtils.concatArray(data);
+      if (! urlPath.includes(strCpiRequest)) {
+        console.log("info", "server="+"resource", '"response HTTP 200 OK"', "endpoint="+urlPath);
+      }
+      else {
+        console.log("info", "server="+"resource", '"response CPI HTTP 200 OK"', "endpoint="+urlPath);
+        //TODO if a request was for "subject-mapping" parse IDs and return CPI result. 
+        //TODO Remove Mock data
+        strRes = strCPIMock;
+      }
+      res.writeHead(200, addResponseHeaders(responseLength(strRes)));
+      res.end(strRes);
     });
   }
 });
@@ -149,10 +167,16 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
     let chunks = '';
     var options = structuredClone(optionsNode);
     options.path = urlPath;
+    //console.debug("debug", "options", options);
+    if (urlPath.includes(strCpiRequest)) {
+      console.info("info", "CPI request received", urlPath, urlPath.replace(strCpiRequest, strSubjectRequest));
+      options.path = urlPath.replace(strCpiRequest, strSubjectRequest);
+      console.debug("options.path replaced",options.path);
+    }
     const req = proto.request(options, (res) => {
       //console.log("info", "statusCode: ", res.statusCode); // <======= Here's the status code
       //console.log("debug", "headers", JSON.stringify(res.headers));
-      console.log("info", '"request to"', "server="+optionsNode.host, "endpoint="+urlPath);
+      console.log("info", '"request to"', "server="+optionsNode.host, "endpoint="+options.path);
       res.on('data', chunk => {
         chunks+= chunk;
       });
@@ -182,26 +206,26 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
         }
         try {
           if (addSourceInfo) //this is until added to original federation responses
-            chunks = urlUtils.addSourceAttr(chunks,options,urlPath);
+            chunks = addSourceAttr(chunks,options,urlPath);
           resolve(chunks);
         } catch (err) {
           console.error("error", "server="+options.host, "message="+err.message, '"error res.on in getresultHttp from host"');
           console.error(err);
           //errorJson.message = err.message;       
-          resolve(urlUtils.addSourceAttr(urlUtils.getErrorStr500(urlPath), options, urlPath));
+          resolve(addSourceAttr(urlUtils.getErrorStr500(urlPath), options, urlPath));
         };
       });
     });
     req.on('timeout', () => {
         console.error("error", '"timeout from host"', "server="+options.host);
         let dataTimeout = urlUtils.getErrorStrTimeout(urlPath);
-        dataTimeout = urlUtils.addSourceAttr(dataTimeout,options,urlPath);
+        dataTimeout = addSourceAttr(dataTimeout,options,urlPath);
         resolve(dataTimeout);
         req.destroy();
     });
     req.on('error', err => {
       console.error("error", '"error from host"', "server="+options.host, "message="+err.message);
-      resolve(urlUtils.addSourceAttr(urlUtils.getErrorStr500(urlPath)));
+      resolve(addSourceAttr(err.message,options,urlPath));
     });
     req.end();
   });
@@ -211,17 +235,10 @@ function aggregateRequests(urlPath) {
   let toAggregate = [];
   let addSourceToResponse = true;//add 'source' attribute to endpont responses
   //collect Promises from getresultHttp
-  if (optionsChop.host !== undefinedHost) {
-    toAggregate.push(getresultHttp(optionsChop, urlPath, https, addSourceToResponse));
+  for(var element of federatedOptions)
+  {
+    toAggregate.push(getresultHttp(element, urlPath, https, addSourceToResponse));
   }
-  if (optionsPedscommons.host !== undefinedHost)
-    toAggregate.push(getresultHttp(optionsPedscommons, urlPath, https, addSourceToResponse));
-  if (optionsTreehouse.host !== undefinedHost)
-    toAggregate.push(getresultHttp(optionsTreehouse, urlPath, https, addSourceToResponse));
-  if (optionsStjude.host !== undefinedHost) {
-    toAggregate.push(getresultHttp(optionsStjude, urlPath, https, addSourceToResponse));
-  }
-  
   return Promise.all(toAggregate);
   //This was a test for one space
   //let requestChop = getresultHttp(optionsChop, urlPath, http);//Promise
