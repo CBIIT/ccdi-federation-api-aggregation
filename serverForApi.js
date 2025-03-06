@@ -46,7 +46,10 @@ const strCPIMock = JSON.stringify({supplementary_domains: [], participant_ids:
 // as comma-separated domains without protocol: www.server1.com, abc.server2.com, vfr.frh.server3.com
 // expected are hosts from registered servers only
 var apiHosts = process.env.federation_apis.split(",");
-var apiSources = process.env.federation_sources.split(",");
+var apiSources = [];
+if (process.env.federation_sources) {
+  apiSources = process.env.federation_sources.split(",");
+};
 var serverHost = process.env.server_host;
 if (serverHost) {
   SERVER_HOST = serverHost;

@@ -2,7 +2,7 @@
 Copyright (c) 2025, FNLCR - All rights reserved.
 */
 const startApiUrl = "/api/v";//we do not validate the version
-const arrayEndpoints = ["subject", "sample", "file", "info", "metadata","namespace","organization"];
+//const arrayEndpoints = ["subject", "sample", "file", "info", "metadata","namespace","organization"];
 //const mapSources = new Map([["pedscommons", "UChicago"], ["stjude", "StJude"], ["ucsc", "UCSC"], ["kidsfirst", "CHOP"]]);
 const mapSources = new Map([["pedscommons", "PCDC"], ["stjude", "StJude"], ["ucsc", "Treehouse"], ["kidsfirst", "KidsFirst"]]);
 // TODO read above endpoints from YAML
@@ -40,19 +40,20 @@ function getDomain (strHostName) {
 //     }
 //     return resValid;
 // }
-function validEndpoint(str){
-    return [
-        /^\/api\/v[0-9]+\/subject/,
-        /^\/api\/v[0-9]+\/sample/,
-        /^\/api\/v[0-9]+\/file/,
-        /^\/api\/v[0-9]+\/organization/,
-        /^\/api\/v[0-9]+\/info/,
-        /^\/api\/v[0-9]+\/namespace/,
-        /^\/api\/v[0-9]+\/metadata/
-    ].some(function(regexp){
-        return regexp.test(str);
-    });
-}
+// used in v1.0.1 and superseeded by specUtils.matchPathToOpenApi
+// function validEndpoint(str){
+//     return [
+//         /^\/api\/v[0-9]+\/subject/,
+//         /^\/api\/v[0-9]+\/sample/,
+//         /^\/api\/v[0-9]+\/file/,
+//         /^\/api\/v[0-9]+\/organization/,
+//         /^\/api\/v[0-9]+\/info/,
+//         /^\/api\/v[0-9]+\/namespace/,
+//         /^\/api\/v[0-9]+\/metadata/
+//     ].some(function(regexp){
+//         return regexp.test(str);
+//     });
+// }
 function concatArray(res) {
     //res expected is an object array of arrays
     let s= '';
@@ -64,12 +65,15 @@ function concatArray(res) {
     s+= ']';
     return s;
 }
+// an auxilary function for v1.0.0 compatibility
 function findRequestSource(strHost) {
     let strSource = strHost;
-    for (var entry of mapSources.entries()) {
-        if (strHost.includes(entry[0])) {
-            strSource = entry[1];
-            break;
+    if (strHost) {
+        for (var entry of mapSources.entries()) {
+            if (strHost.includes(entry[0])) {
+                strSource = entry[1];
+                break;
+            }
         }
     }
     return strSource;
@@ -119,24 +123,21 @@ function getErrorStrTimeout(strUrl) {
 //keys are URLs, values are source. We assume here that both parameters are arrays
 function mapHostToSource(keys, values) { 
     const mapSources = new Map();
-    if (! keys) {
+    if ((! keys) || (keys.length == 0)) {
         console.error("error", "API domain URLs are not defined.");
         return mapSources;
     }
-    if (! values) {
+    if ((! values) || (values.length == 0)) {//v1.0.0
         console.error("error", "Define API sources!!!");
         //using findRequestSource from v.1.0.0
         for (let i = 0; i < keys.length; i++) {
-            if (i < values.length) {
                 mapSources.set(keys[i], findRequestSource(keys[i]));
-            }
         }
     }
     else {
         if (keys.length !== values.length) {
-        console.error("error", "URL and Sources arrays are not the same length");
+          console.error("error", "URL and Sources arrays are not the same length");
         }
-
         for (let i = 0; i < keys.length; i++) {
             if (i < values.length) {
                 mapSources.set(keys[i], values[i]);
@@ -152,7 +153,6 @@ function mapHostToSource(keys, values) {
 module.exports = {
     getDomain ,
     concatArray,
-    validEndpoint,
     mapHostToSource, 
     addSourceAttr,
     getErrorStr404,
