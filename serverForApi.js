@@ -54,8 +54,9 @@ var serverHost = process.env.server_host;
 if (serverHost) {
   SERVER_HOST = serverHost;
 }
-console.log("info", "federation_apis", apiHosts, __dirname);
-console.info("info", "federation_sources", apiSources);
+console.log("info", "federation_apis", `[${apiHosts.join(', ')}]`, ", dirname:", __dirname);
+console.info("info", "federation_sources", `[${apiSources.join(', ')}]`);
+
 var apiHostSourceMap = urlUtils.mapHostToSource(apiHosts, apiSources);
 
 const startApiUrl = "/api/v";//we do not validate the version

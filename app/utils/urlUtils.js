@@ -147,7 +147,11 @@ function mapHostToSource(keys, values) {
             }
         }
     }
-    console.info("info", "Hosts to Sources", mapSources);
+    let output = '';
+    mapSources.forEach((value, key) => {
+        output += `[${key}: ${value}]`;
+      });
+    console.info("info", "Hosts to Sources Map", output);
     return mapSources;
 }
 module.exports = {
