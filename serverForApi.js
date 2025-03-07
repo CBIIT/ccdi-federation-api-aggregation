@@ -31,30 +31,25 @@ const optionsGeneral = {
   rejectUnauthorized: false
 };
 
-const strCPIMock = JSON.stringify({supplementary_domains: [], participant_ids: 
-  [
-    {domain_name: "USI", participant_id: "PADJKU", 
-    associated_ids: [{participant_id: " PADJKU", domain_name: "USI", domain_category: "organizational_identifier"}]}, 
-    {domain_name: "USI", participant_id: "PAKZVD", 
-    associated_ids: [{participant_id: "COG_PAKZVD", 
-    domain_name: "PCDC", domain_category: "organizational_identifier"}, 
-    {participant_id: " PAKZVD", domain_name: "USI", domain_category: "organizational_identifier"}]}
-  ]}
-);
 // hosts registration is static for now
 // host are defined in env var federation_apis
-// as comma-separated domains without protocol: www.server1.com, abc.server2.com, vfr.frh.server3.com
+// as comma-separated domains without protocol: www.server1.com,abc.server2.com,vfr.frh.server3.com
 // expected are hosts from registered servers only
 var apiHosts = process.env.federation_apis.split(",");
 var apiSources = [];
 if (process.env.federation_sources) {
   apiSources = process.env.federation_sources.split(",");
+}
+else {
+  console.error("error", "env federation_sources is not defined");
 };
+
 var serverHost = process.env.server_host;
 if (serverHost) {
   SERVER_HOST = serverHost;
+  console.info("info",  "environment SERVER_HOST", SERVER_HOST);
 }
-console.log("info", "federation_apis", `[${apiHosts.join(', ')}]`, ", dirname:", __dirname);
+console.info("info", "federation_apis", `[${apiHosts.join(', ')}]`, ", dirname:", __dirname);
 console.info("info", "federation_sources", `[${apiSources.join(', ')}]`);
 
 var apiHostSourceMap = urlUtils.mapHostToSource(apiHosts, apiSources);
@@ -66,7 +61,7 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
     console.log("info", '"response received"', "server="+options.host, urlPath);
     //aggregation adds "source" attribute to all entries which are not arrays
     if ((!strJson) || (strJson === "")) {
-      console.log("info", "server="+options.host, '"addSourceAttr empty parameter strJson"');
+      console.info("info", "server="+options.host, '"addSourceAttr empty parameter strJson"');
       let strSource = apiHostSourceMap.get(options.host);//if source not found use host
       return ('{"source":"' + strSource+ '"}\n');
     }
@@ -77,7 +72,7 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
       return ('{"source":"' + strSource + '",\n ' + strJson.slice(1));
     }
     else if ((strJson.startsWith ('{')) && (!(strJson.includes(":")))) {// an empty json object
-      console.log("info", "server="+options.host, '"addSourceAttr an empty json object"');
+      console.info("info", "server="+options.host, '"addSourceAttr an empty json object"');
       let strSource = apiHostSourceMap.get(options.host);//if source not found use host
       return ('{"source":"' + strSource+ '"}\n');
     }
@@ -141,9 +136,10 @@ const server = http.createServer((req, res) => {
     res.end(data);
   } 
   //else if (! urlUtils.validEndpoint(urlPath)) {
-  else if (! specUtils.matchPathToOpenApi(reqUrl.pathname)) {
+  //TODO remove 404 with CPI communication implementation
+  else if ((urlPath.includes(strCpiRequest)) || (! specUtils.matchPathToOpenApi(reqUrl.pathname))) {
     let data = urlUtils.getErrorStr404(urlPath);
-    console.error("error", "server="+"resource", '"response HTTP 404 invalid"', "endpoint="+urlPath);
+    console.error("error", "server=resource", '"response HTTP 404 invalid"', "endpoint="+urlPath);
     res.writeHead(404, addResponseHeaders(responseLength(data)));
     res.end(data); 
   }//TODO more checks for valid URL Path
@@ -152,13 +148,13 @@ const server = http.createServer((req, res) => {
     aggregateResults(urlPath).then(data => {
       let strRes = urlUtils.concatArray(data);
       if (! urlPath.includes(strCpiRequest)) {
-        console.log("info", "server="+"resource", '"response HTTP 200 OK"', "endpoint="+urlPath);
+        console.log("info", "server=resource", '"response HTTP 200 OK"', "endpoint="+urlPath);
       }
       else {
-        console.log("info", "server="+"resource", '"response CPI HTTP 200 OK"', "endpoint="+urlPath);
+        console.log("info", "server=resource", '"response from CPI"', "endpoint="+urlPath);
         //TODO if a request was for "subject-mapping" parse IDs and return CPI result. 
         //TODO Remove Mock data
-        strRes = strCPIMock;
+        //strRes = strCPIMock; //TODO implement CPI request
       }
       res.writeHead(200, addResponseHeaders(responseLength(strRes)));
       res.end(strRes);
@@ -172,15 +168,16 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
     var options = structuredClone(optionsNode);
     options.path = urlPath;
     //console.debug("debug", "options", options);
-    if (urlPath.includes(strCpiRequest)) {
-      console.info("info", "CPI request received", urlPath, urlPath.replace(strCpiRequest, strSubjectRequest));
-      options.path = urlPath.replace(strCpiRequest, strSubjectRequest);
-      console.debug("options.path replaced",options.path);
-    }
+    //TODO implement CPI communication
+    // if (urlPath.includes(strCpiRequest)) {
+    //   console.info("info", "CPI request received", urlPath, urlPath.replace(strCpiRequest, strSubjectRequest));
+    //   options.path = urlPath.replace(strCpiRequest, strSubjectRequest);
+    //   console.debug("options.path replaced",options.path);
+    // }
     const req = proto.request(options, (res) => {
       //console.log("info", "statusCode: ", res.statusCode); // <======= Here's the status code
       //console.log("debug", "headers", JSON.stringify(res.headers));
-      console.log("info", '"request to"', "server="+optionsNode.host, "endpoint="+options.path);
+      console.info("info", '"request to"', "server="+optionsNode.host, "endpoint="+options.path);
       res.on('data', chunk => {
         chunks+= chunk;
       });
