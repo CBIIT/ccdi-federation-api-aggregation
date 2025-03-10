@@ -1,6 +1,6 @@
 {
   "name": "ccdi-federation-api-aggregation",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "CCDI Data Federation platform API aggregation level implementation.",
   "main": "serverForApi.js",
   "scripts": {
@@ -39,10 +39,10 @@
     "http": "^0.0.1-security",
     "https": "^1.0.0",
     "newrelic": "latest",
+    "path": "^0.12.7",
     "process": "^0.11.10",
     "psl": "^1.9.0",
-    "sanitize": "^2.1.2",
-    "newrelic": "latest"
+    "sanitize": "^2.1.2"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
