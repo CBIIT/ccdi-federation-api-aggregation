@@ -1,9 +1,10 @@
-//const https = require('https'); //uncomment if using https
-const http = require('http'); //comment if using https
+const https = require('https'); //uncomment if using https
+//const http = require('http'); //comment if using https
 const fs = require('fs');
 
 // The URL to fetch the JSON data namespaces
-const url = 'http://localhost:3000/api/v1/namespace';  // Replace with the actual AL URL
+//const url = 'http://localhost:3000/api/v1/namespace';  // Replace with the actual AL URL
+const url = 'https://federation-stage.ccdi.cancer.gov/api/v1/namespace'; // Replace with the actual AL URL
 const outputFile = "namespaces-AL.csv";// output file name
 
 // Endpoint "namespace" the headers that correspond to the data to extract
@@ -43,7 +44,7 @@ function getValueByPath(obj, path) {
 }
 
 // Making an HTTP[S] GET request to fetch the array of arrays of objects namespace endpoint
-http.get(url, (response) => {
+https.get(url, (response) => {
   let data = '';
 
   // A chunk of data has been received.
