@@ -5,7 +5,7 @@
 #ARG NODE_VERSION=23.6.0
 
 #FROM node:${NODE_VERSION}-alpine3.19
-FROM node:23.6.0-alpine3.20 AS fnl_base_image
+FROM node:23.9.0-alpine3.20 AS fnl_base_image
 
 ## Update Alpine option
 #RUN apk update
