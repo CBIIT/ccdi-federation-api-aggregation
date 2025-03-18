@@ -19,7 +19,7 @@ info:
   contact:
     name: Childhood Cancer Data Initiative support email
     email: NCIChildhoodCancerDataInitiative@mail.nih.gov
-  version: v1.1.0
+  version: v1.1.1
 servers:
   - url: https://federation.ccdi.cancer.gov/api/v1
     description: CCDI Data Federation Resource API server
@@ -298,6 +298,188 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/responses.SummaryArray'
+  /subject-mapping:
+    get:
+      tags:
+      - Subject
+      summary: Gets the subjects IDs known by this server.
+      description: |-
+        Finds the subjects known by this server and
+        returns domain ID/ID pair and all mapped organizational domain ID/ID 
+        pairs for each found subject ID. Find more information on
+        [Get Relevant
+        Domain IDs](https://participantindex-docs.ccdi.cancer.gov).
+
+        ### Pagination
+
+        This endpoint is paginated. Users may override the default pagination
+        parameters by providing one or more of the pagination-related query
+        parameters below.
+
+        ### Filtering
+
+        All harmonized (top-level) and unharmonized (nested under the
+        `metadata.unharmonized` key) metadata fields are filterable. To achieve
+        this, you can provide the field name as a [`String`]. Filtering follows the
+        following rules:
+
+        * For single-value metadata field, the subject is included in the results if
+        its value _exactly_ matches the query string. Matches are case-sensitive.
+        * For multiple-value metadata fields, the subject is included in the results
+        if any of its values for the field _exactly_ match the query string (a
+        logical OR [`||`]). Matches are case-sensitive.
+        * When the metadata field is `null` (in the case of singular or
+        multiple-valued metadata fields) or empty, the subject is not included.
+        * When multiple fields are provided as filters, a logical AND (`&&`) strings
+        together the predicates. In other words, all filters must match for a
+        subject to be returned. Note that this means that servers do not natively
+        support logical OR (`||`) across multiple fields: that must be done by
+        calling this endpoint with each of your desired queries and performing a
+        set union of those subjects out of band.
+
+        ### Ordering
+
+        This endpoint has default ordering requirements—those details are documented
+        in the `responses::Subjects` schema.
+      operationId: subject_cpi
+      parameters:
+      - name: sex
+        in: query
+        description: Matches any subject where the `sex` field matches the string provided.
+        required: false
+        schema:
+          type: string
+      - name: race
+        in: query
+        description: |-
+          Matches any subject where any member of the `race` field matches the
+          string provided.
+
+          **Note:** a logical OR (`||`) is performed across the values when
+          determining whether the subject should be included in the results.
+        required: false
+        schema:
+          type: string
+      - name: ethnicity
+        in: query
+        description: |-
+          Matches any subject where the `ethnicity` field matches the string
+          provided.
+        required: false
+        schema:
+          type: string
+      - name: identifiers
+        in: query
+        description: |-
+          Matches any subject where any member of the `identifiers` field matches
+          the string provided.
+
+          **Note:** a logical OR (`||`) is performed across the values when
+          determining whether the subject should be included in the results.
+        required: false
+        schema:
+          type: string
+      - name: vital_status
+        in: query
+        description: |-
+          Matches any subject where the `vital_status` field matches the string
+          provided.
+        required: false
+        schema:
+          type: string
+      - name: age_at_vital_status
+        in: query
+        description: |-
+          Matches any subject where the `age_at_vital_status` field matches the
+          string provided.
+        required: false
+        schema:
+          type: string
+      - name: depositions
+        in: query
+        description: |-
+          Matches any subject where any member of the `depositions` fields match
+          the string provided.
+
+          **Note:** a logical OR (`||`) is performed across the values when
+          determining whether the subject should be included in the results.
+        required: false
+        schema:
+          type: string
+      - name: metadata.unharmonized.<field>
+        in: query
+        description: |-
+          All unharmonized fields should be filterable in the same manner as harmonized fields:
+
+          * Filtering on a singular field should include the `Subject` in the results if the query exactly matches the value of that field for the `Subject` (case-sensitive).
+          * Filtering on field with multiple values should include the `Subject` in the results if the query exactly matches any of the values of the field for that `Subject` (case-sensitive).
+          * Unlike harmonized fields, unharmonized fields must be prefixed with `metadata.unharmonized`.
+
+          **Note:** this query parameter is intended to be symbolic of any unharmonized field. Because of limitations within Swagger UI, it will show up as a query parameter that can be optionally be submitted as part of a request within Swagger UI. Please keep in mind that the literal query parameter `?metadata.unharmonized.<field>=value` is not supported, so attempting to use it within Swagger UI will not work!
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: |-
+          The page to retrieve.
+
+          This is a 1-based index of a page within a page set. The value of `page`
+          **must** default to `1` when this parameter is not provided.
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+      - name: per_page
+        in: query
+        description: |-
+          The number of results per page.
+
+          Each server can select its own default value for `per_page` when this
+          parameter is not provided. That said, the convention within the
+          community is to use `100` as a default value if any value is equally
+          reasonable.
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '404':
+          description: |-
+            Not found.
+            Servers that cannot provide line-level data should use this response rather than Forbidden (403), as there is no level of authorization that would allow one to access the information included in the API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.Errors'
+              example:
+                errors:
+                - kind: UnshareableData
+                  entity: Subjects
+                  reason: Our agreement with data providers prohibits us from sharing line-level data.
+                  message: 'Unable to share data for subjects: our agreement with data providers prohibits us from sharing line-level data.'
+        '422':
+          description: Invalid query or path parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.Errors'
+              example:
+                errors:
+                - kind: InvalidParameters
+                  parameters:
+                  - page
+                  - per_page
+                  reason: Unable to calculate offset.
+                  message: 'Invalid value for parameters ''page'' and ''per_page'': unable to calculate offset.'
   /sample:
     get:
       tags:
