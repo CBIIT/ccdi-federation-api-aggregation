@@ -8,6 +8,7 @@ const process = require("process");
 const url = require('url');
 const urlUtils = require("./app/utils/urlUtils");
 const specUtils = require("./app/utils/specUtils");
+const cpiUtils = require("./app/utils/cpiUtils");
 const strCpiRequest = "subject-mapping";
 const strSubjectRequest = "subject";
 
@@ -56,6 +57,13 @@ var apiHostSourceMap = urlUtils.mapHostToSource(apiHosts, apiSources);
 
 const startApiUrl = "/api/v";//we do not validate the version
 
+//CPI configuration
+cpiUtils.cpiInit();
+console.info("info", "cpi communication is configured", cpiUtils.isCpiConfigured());
+if (! cpiUtils.isCpiConfigured()) {
+  console.error("error", "configure CPI environment!");
+}
+
 function addSourceAttr(strJson, options, urlPath=startApiUrl) {
     strJson = strJson.trimStart();
     console.log("info", '"response received"', "server="+options.host, urlPath);
@@ -64,6 +72,9 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
       console.info("info", "server="+options.host, '"addSourceAttr empty parameter strJson"');
       let strSource = apiHostSourceMap.get(options.host);//if source not found use host
       return ('{"source":"' + strSource+ '"}\n');
+    }
+    else if (urlPath.includes(strCpiRequest)) {//CPI request does not need source attribute
+      return strJson;
     }
     else if ((strJson.startsWith ('{')) && (strJson.includes(":"))) {// json has at least one attribute
       //add source
@@ -134,10 +145,8 @@ const server = http.createServer((req, res) => {
     let data = '{"version":"'.concat(apiVersionEnv, '"}');
     res.writeHead(200, addResponseHeaders(responseLength(data), 'application/json'));
     res.end(data);
-  } 
-  //else if (! urlUtils.validEndpoint(urlPath)) {
-  //TODO remove 404 with CPI communication implementation
-  else if ((urlPath.includes(strCpiRequest)) || (! specUtils.matchPathToOpenApi(reqUrl.pathname))) {
+  }
+  else if (! specUtils.matchPathToOpenApi(reqUrl.pathname)) {
     let data = urlUtils.getErrorStr404(urlPath);
     console.error("error", "server=resource", '"response HTTP 404 invalid"', "endpoint="+urlPath);
     res.writeHead(404, addResponseHeaders(responseLength(data)));
@@ -149,15 +158,20 @@ const server = http.createServer((req, res) => {
       let strRes = urlUtils.concatArray(data);
       if (! urlPath.includes(strCpiRequest)) {
         console.log("info", "server=resource", '"response HTTP 200 OK"', "endpoint="+urlPath);
+        res.writeHead(200, addResponseHeaders(responseLength(strRes)));
+        res.end(strRes);
       }
       else {
         console.log("info", "server=resource", '"response from CPI"', "endpoint="+urlPath);
-        //TODO if a request was for "subject-mapping" parse IDs and return CPI result. 
+        //if a request was for "subject-mapping" parse IDs and return CPI result. 
         //TODO Remove Mock data
-        //strRes = strCPIMock; //TODO implement CPI request
+        cpiUtils.apiToCpi(strRes).then(data => {
+          //console.debug("debug typeof cpiResponse", (typeof data));
+          let strRes = JSON.stringify(data);
+          res.writeHead(200, addResponseHeaders(responseLength(strRes)));
+          res.end(strRes);
+        })
       }
-      res.writeHead(200, addResponseHeaders(responseLength(strRes)));
-      res.end(strRes);
     });
   }
 });
@@ -168,12 +182,13 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
     var options = structuredClone(optionsNode);
     options.path = urlPath;
     //console.debug("debug", "options", options);
-    //TODO implement CPI communication
-    // if (urlPath.includes(strCpiRequest)) {
-    //   console.info("info", "CPI request received", urlPath, urlPath.replace(strCpiRequest, strSubjectRequest));
-    //   options.path = urlPath.replace(strCpiRequest, strSubjectRequest);
-    //   console.debug("options.path replaced",options.path);
-    // }
+    //implement CPI communication
+    if (urlPath.includes(strCpiRequest)) {
+      //TODO make more granual comparison
+      console.info("info", "CPI request received", urlPath, urlPath.replace(strCpiRequest, strSubjectRequest));
+      options.path = urlPath.replace(strCpiRequest, strSubjectRequest);
+      console.debug("options.path replaced",options.path);
+    }
     const req = proto.request(options, (res) => {
       //console.log("info", "statusCode: ", res.statusCode); // <======= Here's the status code
       //console.log("debug", "headers", JSON.stringify(res.headers));
