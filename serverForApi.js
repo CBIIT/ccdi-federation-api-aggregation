@@ -167,6 +167,9 @@ const server = http.createServer((req, res) => {
         //TODO Remove Mock data
         cpiUtils.apiToCpi(strRes).then(data => {
           //console.debug("debug typeof cpiResponse", (typeof data));
+          if ((data) && (data.participant_ids) && (Array.isArray(data.participant_ids))) {
+            console.info("info received number of CPI IDs", (data.participant_ids.length));
+          }
           let strRes = JSON.stringify(data);
           res.writeHead(200, addResponseHeaders(responseLength(strRes)));
           res.end(strRes);

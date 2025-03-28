@@ -3,23 +3,22 @@ Copyright (c) 2025, FNLCR - All rights reserved.
 */
 const https = require('https');
 const axios = require('axios');
-const accessToken = "access_token";
 const errCpiServerError = '{"errors": [{"kind": "NotFound", "method": "GET", "route": "/subject-mapping", "message":"Server Error."}]}';
-//namespaceDeposGatewaysData is a  format example of parseSubjectIds result
+//namespaceDeposGatewaysData is a format example of parseSubjectIds result
 const namespaceDeposGatewaysData =   [{
     namespace: { organization: 'MyOrg1', name: 'sd-123' },
     name: 'gh-123',
     depositions: [ { kind: 'dbGaP', value: 'phs001234' } ],
     gateways: [{ kind: 'Reference', gateway: 'org1-gateway' }]
   }];
-//cpiInputLoad is an example of CPI request data generated from API
+//cpiInputLoad is an example of CPI request data extracted from API subject response
 const cpiInputLoad = [
     { domain_name: 'MyOrg1', participant_id: 'gh-123' },
     { domain_name: 'sd-123', participant_id: 'gh-123' },
     { domain_name: 'phs001234', participant_id: 'gh-123' },
     { domain_name: 'org1-gateway', participant_id: 'gh-123' }
   ];
-//requestBodyCpi is an example of CPI request body
+//requestBodyCpi is an example of CPI PID request body
 const requestBodyCpi = {
     participant_ids: [
         { domain_name: "USI", participant_id: "PAKZVD" }
@@ -31,7 +30,6 @@ const clientId = process.env.cpi_client_id;
 const clientSecret = process.env.cpi_client_secret;
 const tokenUrl = process.env.cpi_token_url;
 const cpiUrl = process.env.cpi_url;
-const scope = "custom";
 const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
 //postDataRequestToken is CPI token body data
 const postDataRequestToken = JSON.stringify({
@@ -171,7 +169,7 @@ async function apiToCpi(apiSubjectData) {
       //Send a request and collect a response
       var cpiIds = generateCpiRequestBody(parseSubjectIds(apiSubjectData));
       // start CPI request workflow
-      //console.debug("debug in apiToCpi", JSON.stringify(cpiIds));
+      console.info("info IDs sent to CPI", JSON.stringify(cpiIds));
       var cpiResponse = await getCPIRequest(currToken, cpiIds);
       //var cpiResponse = await getCPIRequest(currToken, requestBodyCpi);//this is a sample data to send to CPI
       //console.debug("debug typeof cpiResponse", (typeof cpiResponse), "API response:\n", cpiResponse);
