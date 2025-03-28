@@ -34,7 +34,7 @@
   "homepage": "https://github.com/CBIIT/ccdi-federation-api-aggregation#readme",
   "dependencies": {
     "dotenv": "^16.4.5",
-    "express": ">=4.21.2",
+    "express": ">=5.0.1",
     "fs": "^0.0.1-security",
     "http": "^0.0.1-security",
     "https": "^1.0.0",
