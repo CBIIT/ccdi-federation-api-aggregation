@@ -68,17 +68,29 @@ function cpiInit() {
         console.error("error", "cpi_client_id environment variable not defined");
         isCpiActivated = false;
     }
+    else {
+      console.info("info", "cpi_client_id environment variable is defined as", clientId);
+    }
     if (! clientSecret) {
         console.error("error", "cpi_client_secret environment variable not defined");
         isCpiActivated = false;
+    }
+    else {
+      console.info("info", "cpi_client_secret environment variable is defined");
     }
     if (! tokenUrl) {
         isCpiActivated = false;
         console.error("error", "cpi_token_url environment variable not defined");
     }
+    else {
+      console.info("into", "cpi_token_url environment variable is defined as", tokenUrl);
+    }
     if (! cpiUrl) {
         isCpiActivated = false;
         console.error("error", "cpi_url environment variable not defined");
+    }
+    else {
+      console.info("info", "cpi_url environment variable is defined as", cpiUrl);
     }
     console.info("info", "cpiUtils cpi access is configured", isCpiActivated);
 };
@@ -166,6 +178,7 @@ async function apiToCpi(apiSubjectData) {
     currToken = await getAccessToken();
     // console.debug("debug", "currToken success", currToken);
     if (currToken !== invalidToken) {
+      console.info("info OKTA token in API to CPI request is received");
       //Send a request and collect a response
       var cpiIds = generateCpiRequestBody(parseSubjectIds(apiSubjectData));
       // start CPI request workflow
