@@ -1,7 +1,6 @@
 /*
 Copyright (c) 2025, FNLCR - All rights reserved.
 */
-const https = require('https');
 const axios = require('axios');
 const errCpiServerError = '{"errors": [{"kind": "NotFound", "method": "GET", "route": "/subject-mapping", "message":"Server Error."}]}';
 //namespaceDeposGatewaysData is a format example of parseSubjectIds result
@@ -30,24 +29,9 @@ const clientId = process.env.cpi_client_id;
 const clientSecret = process.env.cpi_client_secret;
 const tokenUrl = process.env.cpi_token_url;
 const cpiUrl = process.env.cpi_url;
-const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-//postDataRequestToken is CPI token body data
-const postDataRequestToken = JSON.stringify({
-  grant_type: 'client_credentials',
-  scope: 'custom'
-});
+
 axios.defaults.timeout = 15000;
-//optionsToken is CPI token request options
-const optionsToken = {
-  host: tokenUrl,
-  method: 'POST',
-  headers: {
-    'Authorization': `Basic ${credentials}`,
-    'Content-Type': 'application/x-www-form-urlencoded',
-    'Accept': 'application/json',
-  },
-  rejectUnauthorized: false
-};
+
 // console.debug("debug", JSON.stringify(optionsToken));
 //strCpiMock is mock CPI response data 
 const strCpiMock = JSON.stringify({supplementary_domains: [], participant_ids: 
@@ -178,7 +162,7 @@ async function apiToCpi(apiSubjectData) {
     currToken = await getAccessToken();
     // console.debug("debug", "currToken success", currToken);
     if (currToken !== invalidToken) {
-      console.info("info OKTA token in API to CPI request is received");
+      console.info("info OKTA token in API to CPI request is received", currToken);
       //Send a request and collect a response
       var cpiIds = generateCpiRequestBody(parseSubjectIds(apiSubjectData));
       // start CPI request workflow
@@ -203,8 +187,9 @@ async function apiToCpi(apiSubjectData) {
 async function getAccessToken() {
     try {
         const payload = "grant_type=client_credentials&scope=custom";
- 
+        //converted the data to a binary Buffer object and encodes it by Base64 algorithm.
         const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+        console.info("info", "Basic authentication header prepared", auth);
  
         const response = await axios.post(tokenUrl, payload, {
             headers: {
@@ -217,14 +202,13 @@ async function getAccessToken() {
  
         if (response.status === 200) {
             const accessToken = response.data.access_token;
-            //console.debug(`debug: Access Token ${accessToken}`);
             return accessToken;
         } else {
            console.error("error", `failed request to get access token: ${response.status} - ${response.statusText}`);
            return invalidToken;
         }
     } catch (error) {
-      console.error("error", `in getting access token: ${error.message}`);
+      console.error("error", `in getting access token: ${error.message} ${error.name} ${error.statusCode}`);
       return invalidToken;
     }
 }
@@ -257,7 +241,7 @@ async function getCPIRequest(accessToken, requestBody) {
             return errCpiServerError;
         }
     } catch (error) {
-        console.error(`error making API request: ${error.message}`);
+        console.error(`error making API request: ${error.message} ${error.name} ${error.statusCode}`);
         return errCpiServerError;
     }
 }
