@@ -2,7 +2,7 @@
 Copyright (c) 2025, FNLCR - All rights reserved.
 */
 const axios = require('axios');
-const errCpiServerError = '{"errors": [{"kind": "NotFound", "method": "GET", "route": "/subject-mapping", "message":"Server Error."}]}';
+const errCpiServerError = JSON.parse('{"errors": [{"kind": "NotFound", "method": "GET", "route": "/subject-mapping", "message":"Server Error."}]}');
 //namespaceDeposGatewaysData is a format example of parseSubjectIds result
 const namespaceDeposGatewaysData =   [{
     namespace: { organization: 'MyOrg1', name: 'sd-123' },
