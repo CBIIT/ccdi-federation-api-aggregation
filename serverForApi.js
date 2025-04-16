@@ -66,10 +66,14 @@ if (! cpiUtils.isCpiConfigured()) {
 
 function addSourceAttr(strJson, options, urlPath=startApiUrl) {
     strJson = strJson.trimStart();
-    console.log("info", '"response received"', "server="+options.host, urlPath);
+    let outputMsgResp = {server: options.host, endpoint: urlPath, note: "response received"};
+    console.info(JSON.stringify(outputMsgResp));
+    //console.log("info", '"response received"', "server="+options.host, urlPath);
     //aggregation adds "source" attribute to all entries which are not arrays
     if ((!strJson) || (strJson === "")) {
-      console.info("info", "server="+options.host, '"addSourceAttr empty parameter strJson"');
+      let outputMsg = {server: options.host, endpoint: urlPath, note: "addSourceAttr empty parameter strJson"};
+      console.info(JSON.stringify(outputMsg));
+      //console.info("info", "server="+options.host, '"addSourceAttr empty parameter strJson"');
       let strSource = apiHostSourceMap.get(options.host);//if source not found use host
       return ('{"source":"' + strSource+ '"}\n');
     }
@@ -83,7 +87,9 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
       return ('{"source":"' + strSource + '",\n ' + strJson.slice(1));
     }
     else if ((strJson.startsWith ('{')) && (!(strJson.includes(":")))) {// an empty json object
-      console.info("info", "server="+options.host, '"addSourceAttr an empty json object"');
+      let outputMsg = {server: options.host, note: "addSourceAttr an empty json object", endpoint: urlPath};
+      console.info(JSON.stringify(outputMsg));
+      //console.info("info", "server="+options.host, '"addSourceAttr an empty json object"');
       let strSource = apiHostSourceMap.get(options.host);//if source not found use host
       return ('{"source":"' + strSource+ '"}\n');
     }
@@ -125,7 +131,9 @@ function responseLength(strResponse) {//expects a string parameter
 const server = http.createServer((req, res) => {
   const urlPath = req.url;
   const reqUrl = url.parse(urlPath, true);
-  console.log("info", "server="+"resource", '"request received"', "endpoint="+urlPath);
+  let outputMsgOrg = {server: "resource", note: "request received", endpoint: urlPath};
+  console.info(JSON.stringify(outputMsgOrg));
+  //console.info("info", "server="+"resource", '"request received"', "endpoint="+urlPath);
   if (!urlPath || (urlPath.length == 0) || (urlPath === '/')) {
     let data = 'CCDI Federation Resource API';
     res.writeHead(200, addResponseHeaders(responseLength(data), 'text/plain'));
@@ -148,27 +156,37 @@ const server = http.createServer((req, res) => {
   }
   else if (! specUtils.matchPathToOpenApi(reqUrl.pathname)) {
     let data = urlUtils.getErrorStr404(urlPath);
-    console.error("error", "server=resource", '"response HTTP 404 invalid"', "endpoint="+urlPath);
+    let outputMsg = {server: "resource", note: "response HTTP 404 invalid", endpoint: urlPath};
+    //console.error("error", "server=resource", '"response HTTP 404 invalid"', "endpoint="+urlPath);
+    console.error(JSON.stringify(outputMsg));
     res.writeHead(404, addResponseHeaders(responseLength(data)));
     res.end(data); 
   }//TODO more checks for valid URL Path
   else {//try to aggregate
-    console.log("info", '"aggregate responses started"', "endpoint="+urlPath);
+    let outputMsgOrg = {server: "resource", note: "aggregate responses started", endpoint: urlPath};
+    console.info(JSON.stringify(outputMsgOrg));
+    //console.log("info", '"aggregate responses started"', "endpoint="+urlPath);
     aggregateResults(urlPath).then(data => {
       let strRes = urlUtils.concatArray(data);
       if (! urlPath.includes(strCpiRequest)) {
-        console.log("info", "server=resource", '"response HTTP 200 OK"', "endpoint="+urlPath);
+        let outputMsg = {server: "resource", note: "response HTTP 200 OK", endpoint: urlPath};
+        //console.info("server=resource", '"response HTTP 200 OK"', "endpoint="+urlPath);
+        console.info(JSON.stringify(outputMsg));
         res.writeHead(200, addResponseHeaders(responseLength(strRes)));
         res.end(strRes);
       }
       else {
-        console.log("info", "server=resource", '"response from CPI"', "endpoint="+urlPath);
+        let outputMsg = {server: "resource", note: "response from CPI", endpoint: urlPath};
+        //console.info("info", "server=resource", '"response from CPI"', "endpoint="+urlPath);
+        console.info(JSON.stringify(outputMsg));
         //if a request was for "subject-mapping" parse IDs and return CPI result. 
         //TODO Remove Mock data
         cpiUtils.apiToCpi(strRes).then(data => {
           //console.debug("debug typeof cpiResponse", (typeof data));
           if ((data) && (data.participant_ids) && (Array.isArray(data.participant_ids))) {
-            console.info("info received number of CPI IDs", (data.participant_ids.length));
+            let outputMsgCpi = {server: "resource", note: "received number of CPI IDs " + (data.participant_ids.length)};
+            //console.info("info received number of CPI IDs", (data.participant_ids.length));
+            console.info(JSON.stringify(outputMsgCpi));
           }
           let strRes = JSON.stringify(data);
           res.writeHead(200, addResponseHeaders(responseLength(strRes)));
@@ -188,14 +206,18 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
     //implement CPI communication
     if (urlPath.includes(strCpiRequest)) {
       //TODO make more granual comparison
-      console.info("info", "CPI request received", urlPath, urlPath.replace(strCpiRequest, strSubjectRequest));
+      let outputMsg = {server: "resource", note: "CPI request received", endpoint: urlPath};
+      //console.info("info", "CPI request received", urlPath, urlPath.replace(strCpiRequest, strSubjectRequest));
+      console.info(JSON.stringify(outputMsg));
       options.path = urlPath.replace(strCpiRequest, strSubjectRequest);
       console.debug("options.path replaced",options.path);
     }
     const req = proto.request(options, (res) => {
       //console.log("info", "statusCode: ", res.statusCode); // <======= Here's the status code
       //console.log("debug", "headers", JSON.stringify(res.headers));
-      console.info("info", '"request to"', "server="+optionsNode.host, "endpoint="+options.path);
+      let outputMsg = {server: optionsNode.host, endpoint: options.path, note: "request to federation node"};
+      //console.info("info", '"request to"', "server="+optionsNode.host, "endpoint="+options.path);
+      console.info(JSON.stringify(outputMsg));
       res.on('data', chunk => {
         chunks+= chunk;
       });
@@ -203,32 +225,43 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
         //filter our responses with text/html body
         let strContentType = res.headers["content-type"];
         if ((res.statusCode < 500) && (strContentType != null) &&(strContentType.includes("text/html"))) {
-          console.error("error", "server="+options.host, "status="+res.statusCode, "endpoint="+urlPath, '"HTML received"', chunks);
-          console.error("error", "resource generated on HTTP response 404", "server="+options.host, "endpoint="+urlPath);
-          chunks = urlUtils.getErrorStr404(urlPath);
+          let outputMsgErr = {note: "HTML received", server: optionsNode.host, endpoint: urlPath, status:res.statusCode, body: chunks};
+          //console.error("error", "server="+options.host, "status="+res.statusCode, "endpoint="+urlPath, '"HTML received"', chunks);
+          console.error(JSON.stringify(outputMsgErr));
+          outputMsgErr = {note: "resource generated a federation server response for received HTML", server: "resourse", endpoint: urlPath};
+          // console.error("error", "resource generated on HTTP response 404", "server="+options.host, "endpoint="+urlPath);
+          console.error(JSON.stringify(outputMsgErr));
+          chunks = urlUtils.getErrorStr404(urlPath);//replace HTML responses with error json
         }
         else if ((res.statusCode < 500) && (res.statusCode > 200)) {
           //not OK response from Federation Node to be logged to console
           //this include not implemented responses which can be expected.
-          console.error("error", "server="+options.host, "status="+res.statusCode, "endpoint="+urlPath, '"Received not OK HTTP status code"', chunks);
+          let outputMsgErr = {server: optionsNode.host, endpoint: urlPath, status: res.statusCode, note: "Received not OK HTTP status code", body: chunks};
+          console.error(JSON.stringify(outputMsgErr));
+          //console.error("error", "server="+options.host, "status="+res.statusCode, "endpoint="+urlPath, '"Received not OK HTTP status code"', chunks);
         }
         //replace non-json responses with error json
         if ((res.statusCode >= 500) && 
-          ((strContentType != null) && (! strContentType.includes("application/json")) || 
-          (! strContentType))) {
-          console.error("error", "server="+options.host, "status="+res.statusCode, "Server Error received", chunks);
+          ((strContentType != null) && (! strContentType.includes("application/json")) || (! strContentType))) {
+          let outputMsgErr = {server: optionsNode.host, endpoint: urlPath, status: res.statusCode, note: "Server Error received", body: chunks};
+          console.error(JSON.stringify(outputMsgErr));
+          //console.error("error", "server="+options.host, "status="+res.statusCode, "Server Error received", chunks);
           chunks = urlUtils.getErrorStr500(urlPath);
         }
         else if (res.statusCode >= 500) {
           //Federation Node server error response to be logged to console
-          console.error("error", "server="+options.host, "status="+res.statusCode, "endpoint="+urlPath, '"Received server error HTTP status code"', chunks);
+          let outputMsgErr = {server: optionsNode.host, endpoint: urlPath, status: res.statusCode, note: "Received server error HTTP status code", body: chunks};
+          console.error(JSON.stringify(outputMsgErr));
+          //console.error("error", "server="+options.host, "status="+res.statusCode, "endpoint="+urlPath, '"Received server error HTTP status code"', chunks);
         }
         try {
           if (addSourceInfo) //this is until added to original federation responses
             chunks = addSourceAttr(chunks,options,urlPath);
           resolve(chunks);
         } catch (err) {
-          console.error("error", "server="+options.host, "message="+err.message, '"error res.on in getresultHttp from host"');
+          let outputMsgErr = {server: optionsNode.host, endpoint: urlPath, status: res.statusCode, note: "error res.on in getresultHttp from host", message: err.message};
+          console.error(JSON.stringify(outputMsgErr));
+          //console.error("error", "server="+options.host, "message="+err.message, '"error res.on in getresultHttp from host"');
           console.error(err);
           //errorJson.message = err.message;       
           resolve(addSourceAttr(urlUtils.getErrorStr500(urlPath), options, urlPath));
@@ -236,15 +269,19 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
       });
     });
     req.on('timeout', () => {
-        console.error("error", '"timeout from host"', "server="+options.host);
+        let outputMsgErr = {server: optionsNode.host, endpoint: urlPath, note: "timeout from host"};
+        console.error(JSON.stringify(outputMsgErr));
+        //console.error("error", '"timeout from host"', "server="+options.host);
         let dataTimeout = urlUtils.getErrorStrTimeout(urlPath);
         dataTimeout = addSourceAttr(dataTimeout,options,urlPath);
         resolve(dataTimeout);
         req.destroy();
     });
     req.on('error', err => {
-      console.error("error", '"error from host"', "server="+options.host, "message="+err.message);
-      resolve(addSourceAttr(err.message,options,urlPath));
+      let outputMsgErr = {server: optionsNode.host, endpoint: urlPath, note: "error from host", message: err.message};
+      console.error(JSON.stringify(outputMsgErr));
+      //console.error("error", '"error from host"', "server="+options.host, "message="+err.message);
+      resolve(addSourceAttr(err, options, urlPath));
     });
     req.end();
   });
