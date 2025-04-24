@@ -1,7 +1,7 @@
 /*
 Copyright (c) 2023, FNLCR - All rights reserved.
 */
-require('newrelic');
+const newrelic = require('newrelic');
 const http = require("http");
 const https = require("https");
 const process = require("process");
@@ -52,28 +52,44 @@ if (serverHost) {
 console.info("info", "federation_apis", `[${apiHosts.join(', ')}]`, ", dirname:", __dirname);
 console.info("info", "federation_sources", `[${apiSources.join(', ')}]`);
 
-var apiHostSourceMap = urlUtils.mapHostToSource(apiHosts, apiSources);
+var apiDomains = [];
+for(var i = 0; i < apiHosts.length;i++){
+  if (apiHosts[i]) {
+    let parsedHost = new URL("https://" + apiHosts[i]);
+    apiDomains.push(parsedHost.hostname);
+  }
+}
+console.info("info", "apiDomains", `[${apiDomains.join(', ')}]`);
+var apiHostSourceMap = urlUtils.mapHostToSource(apiDomains, apiSources);
 
 const startApiUrl = "/api/v";//we do not validate the version
 
 function addSourceAttr(strJson, options, urlPath=startApiUrl) {
     strJson = strJson.trimStart();
-    console.log("info", '"response received"', "server="+options.host, urlPath);
+    console.info("info", '"response received"', "server="+options.host, "path="+options.path);
     //aggregation adds "source" attribute to all entries which are not arrays
     if ((!strJson) || (strJson === "")) {
-      console.info("info", "server="+options.host, '"addSourceAttr empty parameter strJson"');
+      console.error("error", "server="+options.host, "path="+options.path, '"addSourceAttr empty parameter strJson"');
       let strSource = apiHostSourceMap.get(options.host);//if source not found use host
+      if (! strSource) {
+        strSource = options.host;
+      }
       return ('{"source":"' + strSource+ '"}\n');
     }
     else if ((strJson.startsWith ('{')) && (strJson.includes(":"))) {// json has at least one attribute
       //add source
-      let strHost = options.host;
-      let strSource = apiHostSourceMap.get(strHost);//if source not found use host
+      let strSource = apiHostSourceMap.get(options.host);//if source not found use host
+      if (! strSource) {
+        strSource = options.host;
+      }
       return ('{"source":"' + strSource + '",\n ' + strJson.slice(1));
     }
     else if ((strJson.startsWith ('{')) && (!(strJson.includes(":")))) {// an empty json object
-      console.info("info", "server="+options.host, '"addSourceAttr an empty json object"');
+      console.error("error", "server="+options.host, "path="+options.path, '"addSourceAttr an empty json object"');
       let strSource = apiHostSourceMap.get(options.host);//if source not found use host
+      if (! strSource) {
+        strSource = options.host;
+      }
       return ('{"source":"' + strSource+ '"}\n');
     }
     else {//array
@@ -88,13 +104,18 @@ var tierEnv = process.env.tier;
 console.log("info",  "environment: PROJECT", projectEnv, ", API_VERSION", apiVersionEnv, ", tier", tierEnv);
 let federatedOptions = []; //HTTP options array for federation nodes calls
 for(var i = 0; i < apiHosts.length;i++){
+  let parsedHost = new URL("https://" + apiHosts[i]);
   var optionsForNode = structuredClone(optionsGeneral); //create a new options object
-  optionsForNode.host = apiHosts[i];
+  optionsForNode.path = '';
+  if ((parsedHost.pathname) && (parsedHost.pathname !== "/")) {//this is for Federation Nodes which have subdomains
+    optionsForNode.path = parsedHost.pathname;
+  }
+  optionsForNode.host = parsedHost.hostname;
   federatedOptions.push(optionsForNode);
 }
-// federatedOptions.forEach(element => {
-//   console.debug("debug", federatedOptions element", element);
-// });
+federatedOptions.forEach(element => {
+  console.info("info options in use", JSON.stringify(element));
+});
 
 specUtils.buildPathRegex();
 
@@ -166,17 +187,10 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
   return new Promise ((resolve, reject) => {
     let chunks = '';
     var options = structuredClone(optionsNode);
-    options.path = urlPath;
-    //console.debug("debug", "options", options);
-    //TODO implement CPI communication
-    // if (urlPath.includes(strCpiRequest)) {
-    //   console.info("info", "CPI request received", urlPath, urlPath.replace(strCpiRequest, strSubjectRequest));
-    //   options.path = urlPath.replace(strCpiRequest, strSubjectRequest);
-    //   console.debug("options.path replaced",options.path);
-    // }
+    options.path += urlPath;
     const req = proto.request(options, (res) => {
-      //console.log("info", "statusCode: ", res.statusCode); // <======= Here's the status code
-      //console.log("debug", "headers", JSON.stringify(res.headers));
+      //console.debug("debug", "statusCode: ", res.statusCode); // <======= Here's the status code
+      //console.debug("debug", "headers", JSON.stringify(res.headers));
       console.info("info", '"request to"', "server="+optionsNode.host, "endpoint="+options.path);
       res.on('data', chunk => {
         chunks+= chunk;
@@ -226,7 +240,7 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
     });
     req.on('error', err => {
       console.error("error", '"error from host"', "server="+options.host, "message="+err.message);
-      resolve(addSourceAttr(err.message,options,urlPath));
+      resolve(addSourceAttr(JSON.stringify(err),options,urlPath));
     });
     req.end();
   });
