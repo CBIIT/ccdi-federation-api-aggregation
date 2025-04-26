@@ -1,7 +1,7 @@
 /*
 Copyright (c) 2023, FNLCR - All rights reserved.
 */
-require('newrelic');
+const newrelic = require('newrelic');
 const http = require("http");
 const https = require("https");
 const process = require("process");
@@ -53,7 +53,15 @@ if (serverHost) {
 console.info("info", "federation_apis", `[${apiHosts.join(', ')}]`, ", dirname:", __dirname);
 console.info("info", "federation_sources", `[${apiSources.join(', ')}]`);
 
-var apiHostSourceMap = urlUtils.mapHostToSource(apiHosts, apiSources);
+var apiDomains = [];
+for(var i = 0; i < apiHosts.length;i++){
+  if (apiHosts[i]) {
+    let parsedHost = new URL("https://" + apiHosts[i]);
+    apiDomains.push(parsedHost.hostname);
+  }
+}
+console.info("info", "apiDomains", `[${apiDomains.join(', ')}]`);
+var apiHostSourceMap = urlUtils.mapHostToSource(apiDomains, apiSources);
 
 const startApiUrl = "/api/v";//we do not validate the version
 
@@ -66,7 +74,7 @@ if (! cpiUtils.isCpiConfigured()) {
 
 function addSourceAttr(strJson, options, urlPath=startApiUrl) {
     strJson = strJson.trimStart();
-    let outputMsgResp = {server: options.host, endpoint: urlPath, note: "response received"};
+    let outputMsgResp = {server: options.host, endpoint: options.path, note: "response received"};
     console.info(JSON.stringify(outputMsgResp));
     //console.log("info", '"response received"', "server="+options.host, urlPath);
     //aggregation adds "source" attribute to all entries which are not arrays
@@ -75,6 +83,9 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
       console.info(JSON.stringify(outputMsg));
       //console.info("info", "server="+options.host, '"addSourceAttr empty parameter strJson"');
       let strSource = apiHostSourceMap.get(options.host);//if source not found use host
+      if (! strSource) {
+        strSource = options.host;
+      }
       return ('{"source":"' + strSource+ '"}\n');
     }
     else if (urlPath.includes(strCpiRequest)) {//CPI request does not need source attribute
@@ -82,15 +93,21 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
     }
     else if ((strJson.startsWith ('{')) && (strJson.includes(":"))) {// json has at least one attribute
       //add source
-      let strHost = options.host;
-      let strSource = apiHostSourceMap.get(strHost);//if source not found use host
+      let strSource = apiHostSourceMap.get(options.host);//if source not found use host
+      if (! strSource) {
+        strSource = options.host;
+      }
       return ('{"source":"' + strSource + '",\n ' + strJson.slice(1));
     }
     else if ((strJson.startsWith ('{')) && (!(strJson.includes(":")))) {// an empty json object
       let outputMsg = {server: options.host, note: "addSourceAttr an empty json object", endpoint: urlPath};
       console.info(JSON.stringify(outputMsg));
       //console.info("info", "server="+options.host, '"addSourceAttr an empty json object"');
+
       let strSource = apiHostSourceMap.get(options.host);//if source not found use host
+      if (! strSource) {
+        strSource = options.host;
+      }
       return ('{"source":"' + strSource+ '"}\n');
     }
     else {//array
@@ -102,16 +119,23 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
 var apiVersionEnv = process.env.API_VERSION;
 var projectEnv = process.env.PROJECT;
 var tierEnv = process.env.tier;
-console.log("info",  "environment: PROJECT", projectEnv, ", API_VERSION", apiVersionEnv, ", tier", tierEnv);
+let outputMsgEnv = {environment: projectEnv, apiVersion: apiVersionEnv, tier: tierEnv};
+console.info(JSON.stringify(outputMsgEnv));
+//console.log("info",  "environment: PROJECT", projectEnv, ", API_VERSION", apiVersionEnv, ", tier", tierEnv);
 let federatedOptions = []; //HTTP options array for federation nodes calls
 for(var i = 0; i < apiHosts.length;i++){
+  let parsedHost = new URL("https://" + apiHosts[i]);
   var optionsForNode = structuredClone(optionsGeneral); //create a new options object
-  optionsForNode.host = apiHosts[i];
+  optionsForNode.path = '';
+  if ((parsedHost.pathname) && (parsedHost.pathname !== "/")) {//this is for Federation Nodes which have subdomains
+    optionsForNode.path = parsedHost.pathname;
+  }
+  optionsForNode.host = parsedHost.hostname;
   federatedOptions.push(optionsForNode);
 }
-// federatedOptions.forEach(element => {
-//   console.debug("debug", federatedOptions element", element);
-// });
+federatedOptions.forEach(element => {
+  console.info("info options in use", JSON.stringify(element));
+});
 
 specUtils.buildPathRegex();
 
@@ -200,18 +224,18 @@ const server = http.createServer((req, res) => {
 function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
   return new Promise ((resolve, reject) => {
     let chunks = '';
-    var options = structuredClone(optionsNode);
-    options.path = urlPath;
+    let options = structuredClone(optionsNode);
     //console.debug("debug", "options", options);
     //implement CPI communication
     if (urlPath.includes(strCpiRequest)) {
       //TODO make more granual comparison
-      let outputMsg = {server: "resource", note: "CPI request received", endpoint: urlPath};
-      //console.info("info", "CPI request received", urlPath, urlPath.replace(strCpiRequest, strSubjectRequest));
+      let outputMsg = {server: optionsNode.host, note: "CPI request received", endpoint: urlPath};
       console.info(JSON.stringify(outputMsg));
-      options.path = urlPath.replace(strCpiRequest, strSubjectRequest);
-      console.debug("options.path replaced",options.path);
-    }
+      options.path += urlPath.replace(strCpiRequest, strSubjectRequest);
+     }
+    else {
+      options.path += urlPath;
+    } 
     const req = proto.request(options, (res) => {
       //console.log("info", "statusCode: ", res.statusCode); // <======= Here's the status code
       //console.log("debug", "headers", JSON.stringify(res.headers));
@@ -281,7 +305,7 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
       let outputMsgErr = {server: optionsNode.host, endpoint: urlPath, note: "error from host", message: err.message};
       console.error(JSON.stringify(outputMsgErr));
       //console.error("error", '"error from host"', "server="+options.host, "message="+err.message);
-      resolve(addSourceAttr(err, options, urlPath));
+      resolve(addSourceAttr(JSON.stringify(err),options,urlPath));
     });
     req.end();
   });

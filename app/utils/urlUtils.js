@@ -78,7 +78,7 @@ function findRequestSource(strHost) {
     }
     return strSource;
 }
-//from v1.0.1
+//from v1.0.1 and not used in v1.1.0
 function addSourceAttr(strJson, options, urlPath=startApiUrl) {
     strJson = strJson.trimStart();
     console.log("info", '"response received"', "server="+options.host, urlPath);
