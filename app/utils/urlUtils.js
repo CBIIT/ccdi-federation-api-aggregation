@@ -110,7 +110,7 @@ function getErrorStr404(strUrl) {
 function getErrorStr500(strUrl) {
 	//returns server error error string
 	var objErr = JSON.parse(errTemplateServer500);
-	let outputMsgErr = {server: "resource", endpoint: strUrl, note: "resource received HTTP response 500"};
+	let outputMsgErr = {level: "error", server: "resource", endpoint: strUrl, note: "resource received HTTP response 500"};
 	console.error(JSON.stringify(outputMsgErr));
 	//console.error("error", '"resource received HTTP response 500"', "endpoint="+strUrl);
 	//objErr.errors[0].route = strUrl;
@@ -119,7 +119,7 @@ function getErrorStr500(strUrl) {
 function getErrorStrTimeout(strUrl) {
 	//returns timeout error string
 	var objTimeout = JSON.parse(errTemplateTimeout);
-	let outputMsgErr = {server: "resource", endpoint: strUrl, note: "resource received HTTP request timeout"};
+	let outputMsgErr = {level: "error", server: "resource", endpoint: strUrl, note: "resource received HTTP request timeout"};
 	console.error(JSON.stringify(outputMsgErr));
 	//console.error("error", '"resource received HTTP request timeout"', "endpoint="+strUrl);
 	//objTimeout.errors[0].route = strUrl;
@@ -129,13 +129,13 @@ function getErrorStrTimeout(strUrl) {
 function mapHostToSource(keys, values) { 
     const mapSources = new Map();
     if ((! keys) || (keys.length == 0)) {
-        let outputMsgErr = {server: "resource", note: "API domain URLs are not defined."};
+        let outputMsgErr = {level: "error", server: "resource", note: "API domain URLs are not defined."};
         console.error(JSON.stringify(outputMsgErr));
         //console.error("error", "API domain URLs are not defined.");
         return mapSources;
     }
     if ((! values) || (values.length == 0)) {//v1.0.0
-        let outputMsgErr = {server: "resource", note: "Define API sources!!!"};
+        let outputMsgErr = {level: "error", server: "resource", note: "Define API sources!!!"};
         console.error(JSON.stringify(outputMsgErr));
         //console.error("error", "Define API sources!!!");
         //using findRequestSource from v.1.0.0
@@ -145,7 +145,7 @@ function mapHostToSource(keys, values) {
     }
     else {
         if (keys.length !== values.length) {
-            let outputMsgErr = {server: "resource", note: "URL and Sources arrays lengths are not the same!!!"};
+            let outputMsgErr = {level: "error", server: "resource", note: "URL and Sources arrays lengths are not the same!!!"};
             console.error(JSON.stringify(outputMsgErr));
             //console.error("error", "URL and Sources arrays are not the same length");
         }

@@ -10,6 +10,11 @@ const namespaceDeposGatewaysData =   [{
     depositions: [ { kind: 'dbGaP', value: 'phs001234' } ],
     gateways: [{ kind: 'Reference', gateway: 'org1-gateway' }]
   }];
+//namespaceDeposGatewaysData is a format example of parseSourceSubjectIds result
+const nameSourceData = [{
+    source: "api-server",
+    name: 'gh-123',
+}];
 //cpiInputLoad is an example of CPI request data extracted from API subject response
 const cpiInputLoad = [
     { domain_name: 'MyOrg1', participant_id: 'gh-123' },
@@ -49,34 +54,52 @@ var isCpiActivated = false;
 function cpiInit() {
     isCpiActivated = true;
     if (! clientId) {
-        console.error("error", "cpi_client_id environment variable not defined");
-        isCpiActivated = false;
+      isCpiActivated = false;
+      //console.error("error", "cpi_client_id environment variable not defined");
+      let outputMsgResp = {level: "error", server: "resource", note: "cpi_client_id environment variable not defined"};
+      console.error(JSON.stringify(outputMsgResp));
     }
     else {
-      console.info("info", "cpi_client_id environment variable is defined as", clientId);
+      //console.info("info", "cpi_client_id environment variable is defined as", clientId);
+      let outputMsgResp = {level: "info", server: "resource", note: "cpi_client_id environment variable " + clientId};
+      console.info(JSON.stringify(outputMsgResp));
     }
     if (! clientSecret) {
-        console.error("error", "cpi_client_secret environment variable not defined");
-        isCpiActivated = false;
+      isCpiActivated = false;
+      //console.error("error", "cpi_client_secret environment variable not defined");
+      let outputMsgResp = {level: "error", server: "resource", note: "cpi_client_secret environment variable not defined"};
+      console.error(JSON.stringify(outputMsgResp));
     }
     else {
-      console.info("info", "cpi_client_secret environment variable is defined");
+      //console.info("info", "cpi_client_secret environment variable is defined");
+      let outputMsgResp = {level: "info", server: "resource", note: "cpi_client_secret environment variable is defined"};
+      console.info(JSON.stringify(outputMsgResp));
     }
     if (! tokenUrl) {
-        isCpiActivated = false;
-        console.error("error", "cpi_token_url environment variable not defined");
+      isCpiActivated = false;
+      //console.error("error", "cpi_token_url environment variable not defined");
+      let outputMsgResp = {level: "error", server: "resource", note: "cpi_client_secret environment variable not defined"};
+      console.error(JSON.stringify(outputMsgResp));
     }
     else {
-      console.info("into", "cpi_token_url environment variable is defined as", tokenUrl);
+      //console.info("into", "cpi_token_url environment variable is defined as", tokenUrl);
+      let outputMsgResp = {level: "info", server: "resource", note: "cpi_token_url environment variable " + tokenUrl};
+      console.info(JSON.stringify(outputMsgResp));
     }
     if (! cpiUrl) {
-        isCpiActivated = false;
-        console.error("error", "cpi_url environment variable not defined");
+      isCpiActivated = false;
+      //console.error("error", "cpi_url environment variable not defined");
+      let outputMsgResp = {level: "error", server: "resource", note: "cpi_url environment variable not defined"};
+      console.error(JSON.stringify(outputMsgResp));
     }
     else {
-      console.info("info", "cpi_url environment variable is defined as", cpiUrl);
+      //console.info("info", "cpi_url environment variable is defined as", cpiUrl);
+      let outputMsgResp = {level: "info", server: "resource", note: "cpiUrl environment variable " + cpiUrl};
+      console.info(JSON.stringify(outputMsgResp));
     }
-    console.info("info", "cpiUtils cpi access is configured", isCpiActivated);
+    //console.info("info", "cpiUtils cpi access is configured", isCpiActivated);
+    let outputMsgResp = {level: "info", server: "resource", note: "cpiUtils cpi access is configured " + isCpiActivated};
+    console.info(JSON.stringify(outputMsgResp));
 };
 function isCpiConfigured() {
     return isCpiActivated;
@@ -84,6 +107,7 @@ function isCpiConfigured() {
 /*
 data is a string AL response subject entity response format.
 const namespaceDeposGatewaysData is an example of the object output.
+//not used in v1.1.1
 */
 function parseSubjectIds(data) {
     return extractIdFromData(JSON.parse(data));
@@ -114,6 +138,38 @@ function extractIdFromData(data) {
     });
     return result;
   };
+  function parseSourceSubjectIds(apiSubjectData) {
+    const result = [];
+    // Iterate over the array
+    apiSubjectData.forEach(item => {
+      if (item.data && Array.isArray(item.data)) {
+        // Iterate over the "data" array to find "id" and "metadata.depositions" objects
+        item.data.forEach(dataItem => {
+          if ((dataItem.id) && dataItem.kind === 'Participant') {
+            // Create a new object with the id and merge it with "depositions" from metadata
+            let extractedData = {source: item.source, name: dataItem.id.name};
+            result.push(extractedData); // Push the merged object into the result array
+          }
+        });
+      }
+    });
+    return result;
+  };
+/*
+requestBodyCpi is a return format example
+*/
+function generateCpiSourceRequestBody(data) {
+  const result = [];
+  // Iterate over the array
+  data.forEach(item => {
+      // Iterate over the "data" array to find "id" and "source" as a domain
+      // Create a new object with the id and source
+      let tmp = {domain_name: item.source, participant_id: item.name};
+      result.push(tmp);
+  });
+  let loadData = {participant_ids: result};
+  return loadData;
+};
 /*
 requestBodyCpi is a return format example
 */
@@ -144,6 +200,7 @@ function generateCpiRequestBody(data) {
               });
           }
           }
+
   });
   let loadData = {participant_ids: result};
   //console.debug("debug", "generateCpiBody result\n", loadData);
@@ -153,7 +210,8 @@ function generateCpiRequestBody(data) {
 //apiToCpi returns JSON response string Promise
 async function apiToCpi(apiSubjectData) {
   if (! isCpiConfigured()) {
-    console.error("error", "API CPI communication is not configured");
+    let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping", note: "API CPI communication is not configured"};
+    console.error(JSON.stringify(outputMsgResp));
     return errCpiServerError;
   }
   // Get token
@@ -161,25 +219,31 @@ async function apiToCpi(apiSubjectData) {
   try {
     currToken = await getAccessToken();
     // console.debug("debug", "currToken success", currToken);
-    if (currToken !== invalidToken) {
-      console.info("info OKTA token in API to CPI request is received", currToken);
+    if (currToken !== invalidToken) {  
+      let outputMsgResp = {level: "info", server: "resource", endpoint: "subject-mapping", note: "info OKTA token in API to CPI request is received", token: currToken};
+      console.info(JSON.stringify(outputMsgResp));
       //Send a request and collect a response
-      var cpiIds = generateCpiRequestBody(parseSubjectIds(apiSubjectData));
+      //var cpiIds = generateCpiRequestBody(parseSubjectIds(apiSubjectData));
+      var cpiIds = generateCpiSourceRequestBody(parseSourceSubjectIds(JSON.parse(apiSubjectData)));
       // start CPI request workflow
-      console.info("info IDs sent to CPI", JSON.stringify(cpiIds));
+      //console.info("info IDs sent to CPI", JSON.stringify(cpiIds));
+      outputMsgResp = {level: "info", ids: JSON.stringify(cpiIds)};
+      console.info(JSON.stringify(outputMsgResp));
       var cpiResponse = await getCPIRequest(currToken, cpiIds);
       //var cpiResponse = await getCPIRequest(currToken, requestBodyCpi);//this is a sample data to send to CPI
-      //console.debug("debug typeof cpiResponse", (typeof cpiResponse), "API response:\n", cpiResponse);
       return cpiResponse;
       //return strCpiMock;//this is a sample data to return from CPI
     }
     else {
       //when no token return a prepared error JSON
-      console.error("error no token in API to CPI workflow", error);
+      let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping", note: "API CPI communication is not configured"};
+      console.error(JSON.stringify(outputMsgResp));
       return errCpiServerError;
     }
   } catch (error) {
-    console.error("error in API to CPI workflow", error);
+    //console.error("error in API to CPI workflow", error);
+    let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping", note: error};
+    console.error(JSON.stringify(outputMsgResp));
     return errCpiServerError;
   }
 }
@@ -189,8 +253,9 @@ async function getAccessToken() {
         const payload = "grant_type=client_credentials&scope=custom";
         //converted the data to a binary Buffer object and encodes it by Base64 algorithm.
         const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-        console.info("info", "Basic authentication header prepared", auth);
- 
+        //console.info("info", "Basic authentication header prepared", auth);
+        let outputMsgResp = {level: "info", server: "resource", endpoint: "subject-mapping", note:"Basic authentication header prepared", basic: auth};
+        console.info(JSON.stringify(outputMsgResp));
         const response = await axios.post(tokenUrl, payload, {
             headers: {
                 'Authorization': `Basic ${auth}`,
@@ -204,11 +269,15 @@ async function getAccessToken() {
             const accessToken = response.data.access_token;
             return accessToken;
         } else {
-           console.error("error", `failed request to get access token: ${response.status} - ${response.statusText}`);
+           //console.error("error", `failed request to get access token: ${response.status} - ${response.statusText}`);
+           let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping", note: `failed request to get access token: ${response.status} - ${response.statusText}`};
+           console.error(JSON.stringify(outputMsgResp));
            return invalidToken;
         }
     } catch (error) {
-      console.error("error", `in getting access token: ${error.message} ${error.name} ${error.statusCode}`);
+      //console.error("error", `in getting access token: ${error.message} ${error.name} ${error.statusCode}`);
+      let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping", note: error};
+      console.error(JSON.stringify(outputMsgResp));
       return invalidToken;
     }
 }
@@ -237,11 +306,15 @@ async function getCPIRequest(accessToken, requestBody) {
           //console.debug("debug response.data type", (typeof response.data));
           return response.data;
         } else {
-            console.error(`error API request failed: ${response.status} - ${response.statusText}`);
+            //console.error(`error API request failed: ${response.status} - ${response.statusText}`);
+            let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping", note: `error API request failed: ${response.status} - ${response.statusText}`};
+            console.error(JSON.stringify(outputMsgResp));
             return errCpiServerError;
         }
     } catch (error) {
-        console.error(`error making API request: ${error.message} ${error.name} ${error.statusCode}`);
+        //console.error(`error making API request: ${error.message} ${error.name} ${error.statusCode}`);
+        let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping", note: error};
+        console.error(JSON.stringify(outputMsgResp));
         return errCpiServerError;
     }
 }
