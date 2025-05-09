@@ -162,7 +162,9 @@ function mapHostToSource(keys, values) {
     mapSources.forEach((value, key) => {
         output += `[${key}: ${value}]`;
       });
-    console.info("info", "Hosts to Sources Map", output);
+    //console.info("info", "Hosts to Sources Map", output);
+    let outputMsgMap = {level: "info", server: "resource", note: "Hosts to Sources Map " + output};
+    console.info(JSON.stringify(outputMsgMap));
     return mapSources;
 }
 module.exports = {

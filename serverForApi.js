@@ -42,16 +42,26 @@ if (process.env.federation_sources) {
   apiSources = process.env.federation_sources.split(",");
 }
 else {
-  console.error("error", "env federation_sources is not defined");
+  //console.error("error", "env federation_sources is not defined");
+  let infoMsg0 = {level:"error", server: "resource", note: "env federation_sources is not defined"};
+  console.error(JSON.stringify(infoMsg0))
 };
 
 var serverHost = process.env.server_host;
 if (serverHost) {
   SERVER_HOST = serverHost;
-  console.info("info",  "environment SERVER_HOST", SERVER_HOST);
+  //console.info("info",  "environment SERVER_HOST", SERVER_HOST);
+  let infoMsg1 = {level:"info", server: "resource", note: "environment SERVER_HOST " + SERVER_HOST};
+  console.info(JSON.stringify(infoMsg1))
 }
-console.info("info", "federation_apis", `[${apiHosts.join(', ')}]`, ", dirname:", __dirname);
-console.info("info", "federation_sources", `[${apiSources.join(', ')}]`);
+let infoMsg = {level:"info", server: "resource", note: "federation_apis" + `[${apiHosts.join(', ')}]`};
+console.info(JSON.stringify(infoMsg));
+infoMsg = {level:"info", server: "resource", note: "dirname " + __dirname};
+console.info(JSON.stringify(infoMsg));
+//console.info("info", "federation_apis", `[${apiHosts.join(', ')}]`, ", dirname:", __dirname);
+//console.info("info", "federation_sources", `[${apiSources.join(', ')}]`);
+infoMsg = {level:"info", server: "resource", note: "federation_sources" + `[${apiSources.join(', ')}]`};
+console.info(JSON.stringify(infoMsg));
 
 var apiDomains = [];
 for(var i = 0; i < apiHosts.length;i++){
@@ -60,16 +70,23 @@ for(var i = 0; i < apiHosts.length;i++){
     apiDomains.push(parsedHost.hostname);
   }
 }
-console.info("info", "apiDomains", `[${apiDomains.join(', ')}]`);
+//console.info("info", "apiDomains", `[${apiDomains.join(', ')}]`);
+infoMsg = {level:"info", server: "resource", note: "apiDomains" + `[${apiDomains.join(', ')}]`};
+console.info(JSON.stringify(infoMsg));
+
 var apiHostSourceMap = urlUtils.mapHostToSource(apiDomains, apiSources);
 
 const startApiUrl = "/api/v";//we do not validate the version
 
 //CPI configuration
 cpiUtils.cpiInit();
-console.info("info", "cpi communication is configured", cpiUtils.isCpiConfigured());
+//console.info("info", "cpi communication is configured", cpiUtils.isCpiConfigured());
+infoMsg = {level:"info", server: "resource", note: "cpi communication is configured: " + cpiUtils.isCpiConfigured()};
+console.info(JSON.stringify(infoMsg));
 if (! cpiUtils.isCpiConfigured()) {
-  console.error("error", "configure CPI environment!");
+  //console.error("error", "configure CPI environment!");
+  infoMsg = {level:"error", server: "resource", note: "configure CPI environment"};
+  console.error(JSON.stringify(infoMsg));
 }
 
 function addSourceAttr(strJson, options, urlPath=startApiUrl) {
@@ -119,7 +136,7 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
 var apiVersionEnv = process.env.API_VERSION;
 var projectEnv = process.env.PROJECT;
 var tierEnv = process.env.tier;
-let outputMsgEnv = {environment: projectEnv, apiVersion: apiVersionEnv, tier: tierEnv};
+let outputMsgEnv = {level: "info", note: "environment", environment: projectEnv, apiVersion: apiVersionEnv, tier: tierEnv};
 console.info(JSON.stringify(outputMsgEnv));
 //console.log("info",  "environment: PROJECT", projectEnv, ", API_VERSION", apiVersionEnv, ", tier", tierEnv);
 let federatedOptions = []; //HTTP options array for federation nodes calls
@@ -134,7 +151,9 @@ for(var i = 0; i < apiHosts.length;i++){
   federatedOptions.push(optionsForNode);
 }
 federatedOptions.forEach(element => {
-  console.info("info options in use", JSON.stringify(element));
+  //console.info("info options in use", JSON.stringify(element));
+  let outputMsgOrg = {level: "info", server: "resource", note: "options in use " + JSON.stringify(element)};
+  console.info(JSON.stringify(outputMsgOrg));
 });
 
 specUtils.buildPathRegex();
