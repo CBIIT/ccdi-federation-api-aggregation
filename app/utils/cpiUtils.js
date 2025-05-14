@@ -3,6 +3,7 @@ Copyright (c) 2025, FNLCR - All rights reserved.
 */
 const axios = require('axios');
 const errCpiServerError = JSON.parse('{"errors": [{"kind": "NotFound", "method": "GET", "route": "/subject-mapping", "message":"Server Error."}]}');
+const errCpiNotFound = JSON.parse('{"errors": [{"kind": "NotFound", "method": "GET", "route": "/subject-mapping", "message":"Participants IDs are not found."}]}');
 //namespaceDeposGatewaysData is a format example of parseSubjectIds result
 const namespaceDeposGatewaysData =   [{
     namespace: { organization: 'MyOrg1', name: 'sd-123' },
@@ -49,7 +50,13 @@ const strCpiMock = JSON.stringify({supplementary_domains: [], participant_ids:
     {participant_id: " PAKZVD", domain_name: "USI", domain_category: "organizational_identifier"}]}
   ]}
 );
-
+function checkArrayLength(obj, attribute) {
+  if (obj && obj.hasOwnProperty(attribute) && Array.isArray(obj[attribute])) {
+    return (obj[attribute].length > 0);
+  } else {
+    return false; 
+  }
+}
 var isCpiActivated = false;
 function cpiInit() {
     isCpiActivated = true;
@@ -217,32 +224,37 @@ async function apiToCpi(apiSubjectData) {
   // Get token
   let currToken = invalidToken;
   try {
-    currToken = await getAccessToken();
-    // console.debug("debug", "currToken success", currToken);
-    if (currToken !== invalidToken) {  
-      let outputMsgResp = {level: "info", server: "resource", endpoint: "subject-mapping", note: "info OKTA token in API to CPI request is received", token: currToken};
-      console.info(JSON.stringify(outputMsgResp));
-      //Send a request and collect a response
-      //var cpiIds = generateCpiRequestBody(parseSubjectIds(apiSubjectData));
-      var cpiIds = generateCpiSourceRequestBody(parseSourceSubjectIds(JSON.parse(apiSubjectData)));
-      // start CPI request workflow
-      //console.info("info IDs sent to CPI", JSON.stringify(cpiIds));
-      outputMsgResp = {level: "info", ids: JSON.stringify(cpiIds)};
-      console.info(JSON.stringify(outputMsgResp));
-      var cpiResponse = await getCPIRequest(currToken, cpiIds);
-      //var cpiResponse = await getCPIRequest(currToken, requestBodyCpi);//this is a sample data to send to CPI
-      return cpiResponse;
-      //return strCpiMock;//this is a sample data to return from CPI
+    var cpiIds = generateCpiSourceRequestBody(parseSourceSubjectIds(JSON.parse(apiSubjectData)));
+    if (checkArrayLength(cpiIds, "participant_ids")) {
+      currToken = await getAccessToken();
+      if (currToken !== invalidToken) {
+        let outputMsgResp = {level: "info", server: "resource", endpoint: "subject-mapping", note: "OKTA token in API to CPI request is received", token: currToken};
+        console.info(JSON.stringify(outputMsgResp));
+        // start CPI request workflow
+        //console.info("info IDs sent to CPI", JSON.stringify(cpiIds));
+        outputMsgResp = {level: "info", ids: JSON.stringify(cpiIds)};
+        console.info(JSON.stringify(outputMsgResp));
+        var cpiResponse = await getCPIRequest(currToken, cpiIds);
+        //var cpiResponse = await getCPIRequest(currToken, requestBodyCpi);//this is a sample data to send to CPI
+        return cpiResponse;
+        //return strCpiMock;//this is a sample data to return from CPI
+      }
+      else {
+        //when no token return a prepared error JSON
+        let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping OKTA", note: "OKTA token in API to CPI request is received"};
+        console.error(JSON.stringify(outputMsgResp));
+        return errCpiServerError;
+      }
     }
     else {
-      //when no token return a prepared error JSON
-      let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping", note: "API CPI communication is not configured"};
-      console.error(JSON.stringify(outputMsgResp));
-      return errCpiServerError;
+      let outputMsgRespNotFound = {level: "error", server: "resource", endpoint: "subject-mapping", note: "Participants IDs are not found for this request"};
+      console.error(JSON.stringify(outputMsgRespNotFound));
+      return errCpiNotFound;
     }
-  } catch (error) {
+  }
+  catch (error) {
     //console.error("error in API to CPI workflow", error);
-    let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping", note: error};
+    let outputMsgResp = {level: "error", server: "resource", endpoint: "associated_participant_ids", note: `API to CPI workflow error: ${error.message} - ${error.code} - ${error.status}`};
     console.error(JSON.stringify(outputMsgResp));
     return errCpiServerError;
   }
@@ -254,7 +266,7 @@ async function getAccessToken() {
         //converted the data to a binary Buffer object and encodes it by Base64 algorithm.
         const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
         //console.info("info", "Basic authentication header prepared", auth);
-        let outputMsgResp = {level: "info", server: "resource", endpoint: "subject-mapping", note:"Basic authentication header prepared", basic: auth};
+        let outputMsgResp = {level: "info", server: "resource", endpoint: "subject-mapping OKTA", note:"Basic authentication header prepared", basic: auth};
         console.info(JSON.stringify(outputMsgResp));
         const response = await axios.post(tokenUrl, payload, {
             headers: {
@@ -270,13 +282,13 @@ async function getAccessToken() {
             return accessToken;
         } else {
            //console.error("error", `failed request to get access token: ${response.status} - ${response.statusText}`);
-           let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping", note: `failed request to get access token: ${response.status} - ${response.statusText}`};
+           let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping OKTA", note: `failed request to get access token: ${response.status} - ${response.statusText}`};
            console.error(JSON.stringify(outputMsgResp));
            return invalidToken;
         }
     } catch (error) {
       //console.error("error", `in getting access token: ${error.message} ${error.name} ${error.statusCode}`);
-      let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping", note: error};
+      let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping OKTA", note: `API to OKTA request failed: ${error.message} - ${error.code} - ${error.status}`};
       console.error(JSON.stringify(outputMsgResp));
       return invalidToken;
     }
@@ -307,13 +319,13 @@ async function getCPIRequest(accessToken, requestBody) {
           return response.data;
         } else {
             //console.error(`error API request failed: ${response.status} - ${response.statusText}`);
-            let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping", note: `error API request failed: ${response.status} - ${response.statusText}`};
+            let outputMsgResp = {level: "error", server: "resource", endpoint: "associated_participant_ids", note: `API to CPI request failed: ${response.status} - ${response.statusText}`};
             console.error(JSON.stringify(outputMsgResp));
             return errCpiServerError;
         }
     } catch (error) {
         //console.error(`error making API request: ${error.message} ${error.name} ${error.statusCode}`);
-        let outputMsgResp = {level: "error", server: "resource", endpoint: "subject-mapping", note: error};
+        let outputMsgResp = {level: "error", server: "resource", endpoint: "associated_participant_ids", note: `API received CPI error: ${error.message} - ${error.code} - ${error.status}`};
         console.error(JSON.stringify(outputMsgResp));
         return errCpiServerError;
     }
