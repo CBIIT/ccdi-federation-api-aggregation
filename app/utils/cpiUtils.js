@@ -266,7 +266,7 @@ async function getAccessToken() {
         //converted the data to a binary Buffer object and encodes it by Base64 algorithm.
         const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
         //console.info("info", "Basic authentication header prepared", auth);
-        let outputMsgResp = {level: "info", server: "resource", endpoint: "subject-mapping OKTA", note:"Basic authentication header prepared", basic: auth};
+        let outputMsgResp = {level: "info", server: "resource", endpoint: "subject-mapping OKTA", note:"Basic authentication header prepared"};
         console.info(JSON.stringify(outputMsgResp));
         const response = await axios.post(tokenUrl, payload, {
             headers: {
