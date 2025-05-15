@@ -120,7 +120,6 @@ function addSourceAttr(strJson, options, urlPath=startApiUrl) {
       let outputMsg = {server: options.host, note: "addSourceAttr an empty json object", endpoint: urlPath};
       console.info(JSON.stringify(outputMsg));
       //console.info("info", "server="+options.host, '"addSourceAttr an empty json object"');
-
       let strSource = apiHostSourceMap.get(options.host);//if source not found use host
       if (! strSource) {
         strSource = options.host;
