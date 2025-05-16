@@ -21,10 +21,14 @@ function buildPathRegex() {
       regexPathArr.push(regexPath);
     }
   } catch (e) {
-    console.error("error reading swagger-aggr.yml", "the server will not function", e);
+    let outputMsg = {level: "error", server: "resource", note: "error reading swagger-aggr.yml the server will not function ", error: e};
+    console.error(JSON.stringify(outputMsg));
+    //console.error("error reading swagger-aggr.yml", "the server will not function", e);
   }
   if (regexPathArr.length <= 0) {
-  	console.error("error parsing spec file swagger-aggr.yml", "API endpoints were not found in the spec");
+    let outputMsg = {level: "error", server: "resource", note: "error parsing spec file swagger-aggr.yml: API endpoints were not found in the spec"};
+    console.error(JSON.stringify(outputMsg));
+    //console.error("error parsing spec file swagger-aggr.yml", "API endpoints were not found in the spec");
   }
 }
 function matchPathToOpenApi(pathname) {
@@ -33,7 +37,9 @@ function matchPathToOpenApi(pathname) {
       return true;
      }
   }
-  console.error("error invalid path", pathname);
+  let outputMsg = {level: "error", server: "resource", endpoint: pathname , note: "error invalid path"};
+  console.error(JSON.stringify(outputMsg));
+  //console.error("error invalid path", pathname);
   return false;
 }
 
