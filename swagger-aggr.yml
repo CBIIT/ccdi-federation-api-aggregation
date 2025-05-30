@@ -14,7 +14,7 @@ info:
       Federation node.
     * Additionally, you can view the Swagger specification in a more traditional
       theme by visiting
-      [this link](https://editor.swagger.io/?url=https://cbiit.github.io/ccdi-federation-api/swagger.yml).
+      [this link](https://editor-next.swagger.io/?url=https://cbiit.github.io/ccdi-federation-api/swagger.yml).
  
   contact:
     name: Childhood Cancer Data Initiative support email
