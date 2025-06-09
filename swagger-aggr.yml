@@ -8,7 +8,7 @@ info:
     querying of federated pediatric cancer within the broader community. The goal
     of the API is to support identification of pediatric cancer samples of interest
     via a variety of query parameters.
-    The API is integrated with the [Childhood Participant Index (CPI) Service](https://ccdi.cancer.gov/ccdi-participant-index) 
+    The API is integrated with the [Childhood Participant Index (CPI) Service](https://ccdi.cancer.gov/ccdi-participant-index)
     through "subject-mapping" endpoint.
     ### CCDI Data Federation Participating Nodes API Access
     * Visit the [documentation homepage](https://cbiit.github.io/ccdi-federation-api)
@@ -16,12 +16,12 @@ info:
       Federation node.
     * Additionally, you can view the Swagger specification in a more traditional
       theme by visiting
-      [this link](https://editor.swagger.io/?url=https://cbiit.github.io/ccdi-federation-api/swagger.yml).
-      
+      [this link](https://editor-next.swagger.io/?url=https://cbiit.github.io/ccdi-federation-api/swagger.yml).
+ 
   contact:
     name: Childhood Cancer Data Initiative support email
     email: NCIChildhoodCancerDataInitiative@mail.nih.gov
-  version: v1.1.1
+  version: v1.2.0
 servers:
   - url: https://federation-stage.ccdi.cancer.gov/api/v1
     description: CCDI Data Federation Resource API server
@@ -574,6 +574,14 @@ paths:
         required: false
         schema:
           type: string
+      - name: tumor_grade
+        in: query
+        description: |-
+          Matches any sample where the `tumor_grade` field matches the string
+          provided.
+        required: false
+        schema:
+          type: string
       - name: specimen_molecular_analyte_type
         in: query
         description: |-
@@ -606,14 +614,6 @@ paths:
         required: false
         schema:
           type: string
-      - name: diagnosis
-        in: query
-        description: |-
-          Matches any sample where the `diagnosis` field matches the string
-          provided.
-        required: false
-        schema:
-          type: string
       - name: age_at_collection
         in: query
         description: |-
@@ -638,6 +638,14 @@ paths:
 
           **Note:** a logical OR (`||`) is performed across the values when
           determining whether the sample should be included in the results.
+        required: false
+        schema:
+          type: string
+      - name: diagnosis
+        in: query
+        description: |-
+          Matches any sample where the `diagnosis` field matches the
+          string provided.
         required: false
         schema:
           type: string
@@ -1221,6 +1229,457 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/responses.InformationArray'
+  /sample-diagnosis:
+    get:
+      tags:
+      - Experimental
+      summary: 'Experimental: Filter the samples known by this server by free-text diagnosis search.'
+      description: |-
+        Experimental: Filter the samples known by this server by free-text diagnosis search.
+
+        ### Diagnosis Filtering
+
+        This endpoint supports the experimental `search` parameter.
+        For this parameter, the sample is included in the results if the value of its
+        its `diagnosis` field _contains_ the query string, or if an unharmonized field
+        treated by the implementer as a diagnosis field contains that query string.
+        Matches are case-insensitive.
+
+        ### Pagination
+
+        This endpoint is paginated. Users may override the default pagination
+        parameters by providing one or more of the pagination-related query
+        parameters below.
+
+        ### Additional Filtering
+
+        All harmonized (top-level) and unharmonized (nested under the
+        `metadata.unharmonized` key) metadata fields are filterable. To achieve
+        this, you can provide the field name as a [`String`]. Filtering follows the
+        following rules:
+
+        * For single-value metadata field, the sample is included in the results if
+        its value _exactly_ matches the query string. Matches are case-sensitive.
+        * For multiple-value metadata fields, the sample is included in the results
+        if any of its values for the field _exactly_ match the query string (a
+        logical OR [`||`]). Matches are case-sensitive.
+        * When the metadata field is `null` (in the case of singular or
+        multiple-valued metadata fields) or empty, the sample is not included.
+        * When multiple fields are provided as filters, a logical AND (`&&`) strings
+        together the predicates. In other words, all filters must match for a
+        sample to be returned. Note that this means that servers do not natively
+        support logical OR (`||`) across multiple fields: that must be done by
+        calling this endpoint with each of your desired queries and performing a
+        set union of those samples out of band.
+
+        ### Ordering
+
+        This endpoint has default ordering requirements—those details are documented
+        in the `responses::Samples` schema.
+      operationId: sample_diagnosis_index
+      parameters:
+      - name: search
+        in: query
+        description: |-
+          Matches any sample where the `diagnosis` field contains the
+          string provided, ignoring case.
+        required: false
+        schema:
+          type: string
+      - name: disease_phase
+        in: query
+        description: |-
+          Matches any sample where the `disease_phase` field matches the string
+          provided.
+        required: false
+        schema:
+          type: string
+      - name: anatomical_sites
+        in: query
+        description: |-
+          Matches any sample where the `anatomical_sites` field matches the string
+          provided.
+
+          **Note:** a logical OR (`||`) is performed across the values when
+          determining whether the subject should be included in the results.
+        required: false
+        schema:
+          type: string
+      - name: library_selection_method
+        in: query
+        description: |-
+          Matches any sample where the `library_selection_method` field matches the string
+          provided.
+        required: false
+        schema:
+          type: string
+      - name: library_strategy
+        in: query
+        description: |-
+          Matches any sample where the `library_strategy` field matches the string
+          provided.
+        required: false
+        schema:
+          type: string
+      - name: library_source_material
+        in: query
+        description: |-
+          Matches any sample where the `library_source_material` field matches the string
+          provided.
+        required: false
+        schema:
+          type: string
+      - name: preservation_method
+        in: query
+        description: |-
+          Matches any sample where the `preservation_method` field matches the string
+          provided.
+        required: false
+        schema:
+          type: string
+      - name: specimen_molecular_analyte_type
+        in: query
+        description: |-
+          Matches any sample where the `specimen_molecular_analyte_type` field matches the string
+          provided.
+        required: false
+        schema:
+          type: string
+      - name: tissue_type
+        in: query
+        description: |-
+          Matches any sample where the `tissue_type` field matches the string
+          provided.
+        required: false
+        schema:
+          type: string
+      - name: tumor_classification
+        in: query
+        description: |-
+          Matches any sample where the `tumor_classification` field matches the
+          string provided.
+        required: false
+        schema:
+          type: string
+      - name: age_at_diagnosis
+        in: query
+        description: |-
+          Matches any sample where the `age_at_diagnosis` field matches the string
+          provided.
+        required: false
+        schema:
+          type: string
+      - name: age_at_collection
+        in: query
+        description: |-
+          Matches any sample where the `age_at_collection` field matches the
+          string provided.
+        required: false
+        schema:
+          type: string
+      - name: tumor_tissue_morphology
+        in: query
+        description: |-
+          Matches any sample where the `tumor_tissue_morphology` field matches the
+          string provided.
+        required: false
+        schema:
+          type: string
+      - name: depositions
+        in: query
+        description: |-
+          Matches any sample where any member of the `depositions` fields match
+          the string provided.
+
+          **Note:** a logical OR (`||`) is performed across the values when
+          determining whether the sample should be included in the results.
+        required: false
+        schema:
+          type: string
+      - name: diagnosis
+        in: query
+        description: |-
+          Matches any sample where the `diagnosis` field matches the
+          string provided.
+        required: false
+        schema:
+          type: string
+      - name: metadata.unharmonized.<field>
+        in: query
+        description: |-
+          All unharmonized fields should be filterable in the same manner as harmonized fields:
+
+          * Filtering on a singular field should include the `Sample` in the results if the query exactly matches the value of that field for the `Sample` (case-sensitive).
+          * Filtering on field with multiple values should include the `Sample` in the results if the query exactly matches any of the values of the field for that `Sample` (case-sensitive).
+          * Unlike harmonized fields, unharmonized fields must be prefixed with `metadata.unharmonized`.
+
+          **Note:** this query parameter is intended to be symbolic of any unharmonized field. Because of limitations within Swagger UI, it will show up as a query parameter that can be optionally be submitted as part of a request within Swagger UI. Please keep in mind that the literal query parameter `?metadata.unharmonized.<field>=value` is not supported, so attempting to use it within Swagger UI will not work!
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: |-
+          The page to retrieve.
+
+          This is a 1-based index of a page within a page set. The value of `page`
+          **must** default to `1` when this parameter is not provided.
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+      - name: per_page
+        in: query
+        description: |-
+          The number of results per page.
+
+          Each server can select its own default value for `per_page` when this
+          parameter is not provided. That said, the convention within the
+          community is to use `100` as a default value if any value is equally
+          reasonable.
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            link:
+              schema:
+                type: string
+              description: "Links to URLs that may be of interest when paging through paginated responses. This header contains two or more links of interest. The format of the field is as follows: \n\n`Link: <URL>; rel=\"REL\"` \n### Relationships\n\nIn the format above, `URL` represents a valid URL for the link of interest and `REL` is one of four values: \n- `first` (_Required_). A link to the first page in the results (can be the same as `last` if there is only one page).\n- `last` (_Required_). A link to the first page in the results (can be the same as `first` if there is only one page).\n- `next` (_Optional_). A link to the next page (if it exists).\n- `prev` (_Optional_). A link to the previous page (if it exists).\n\n### Requirements\n\n- This header _must_ provide links for at least the `first` and `last` rels.\n - The `prev` and `next` links must exist only (a) when there are multiple pages in the result page set and (b) when the current page is not the first or last page, respectively.\n- This list of links is unordered.\n\n ### Notes\n\n- HTTP 1.1 and HTTP 2.0 dictate that response headers are case insensitive. Though not required, we recommend an all lowercase name of `link` for this response header."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.SamplesArray'
+        '404':
+          description: |-
+            Not found.
+            Servers that cannot provide line-level data should use this response rather than Forbidden (403), as there is no level of authorization that would allow one to access the information included in the API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.Errors'
+              example:
+                errors:
+                - kind: UnshareableData
+                  entity: Samples
+                  reason: Our agreement with data providers prohibits us from sharing line-level data.
+                  message: 'Unable to share data for samples: our agreement with data providers prohibits us from sharing line-level data.'
+        '422':
+          description: Invalid query or path parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.Errors'
+              example:
+                errors:
+                - kind: InvalidParameters
+                  parameters:
+                  - page
+                  - per_page
+                  reason: Unable to calculate offset.
+                  message: 'Invalid value for parameters ''page'' and ''per_page'': unable to calculate offset.'
+  /subject-diagnosis:
+    get:
+      tags:
+      - Experimental
+      summary: 'Experimental: Filter the subjects known by this server by free-text diagnosis search.'
+      description: |-
+        Experimental: Filter the subjects known by this server by free-text diagnosis search.
+
+        ### Diagnosis Filtering
+
+        This endpoint supports the experimental `search` parameter.
+        For this parameter, the subject is included in the results if the value of its
+        its `associated_diagnoses` field has at least one diagnosis which _contains_ the query string.
+        Matches are case-insensitive.
+
+        ### Pagination
+
+        This endpoint is paginated. Users may override the default pagination
+        parameters by providing one or more of the pagination-related query
+        parameters below.
+
+        ### Additional Filtering
+
+        All harmonized (top-level) and unharmonized (nested under the
+        `metadata.unharmonized` key) metadata fields are filterable. To achieve
+        this, you can provide the field name as a [`String`]. Filtering follows the
+        following rules:
+
+        * For single-value metadata field, the subject is included in the results if
+        its value _exactly_ matches the query string. Matches are case-sensitive.
+        * For multiple-value metadata fields, the subject is included in the results
+        if any of its values for the field _exactly_ match the query string (a
+        logical OR [`||`]). Matches are case-sensitive.
+        * When the metadata field is `null` (in the case of singular or
+        multiple-valued metadata fields) or empty, the subject is not included.
+        * When multiple fields are provided as filters, a logical AND (`&&`) strings
+        together the predicates. In other words, all filters must match for a
+        subject to be returned. Note that this means that servers do not natively
+        support logical OR (`||`) across multiple fields: that must be done by
+        calling this endpoint with each of your desired queries and performing a
+        set union of those subjects out of band.
+
+        ### Ordering
+
+        This endpoint has default ordering requirements—those details are documented
+        in the `responses::Subjects` schema.
+      operationId: subject_diagnosis_index
+      parameters:
+      - name: search
+        in: query
+        description: |-
+          Matches any subject where any member of the `associated_diagnoses` field contains the
+          string provided, ignoring case.
+
+          **Note:** a logical OR (`||`) is performed across the values when
+          determining whether the subject should be included in the results.
+        required: false
+        schema:
+          type: string
+      - name: sex
+        in: query
+        description: Matches any subject where the `sex` field matches the string provided.
+        required: false
+        schema:
+          type: string
+      - name: race
+        in: query
+        description: |-
+          Matches any subject where any member of the `race` field matches the
+          string provided.
+
+          **Note:** a logical OR (`||`) is performed across the values when
+          determining whether the subject should be included in the results.
+        required: false
+        schema:
+          type: string
+      - name: ethnicity
+        in: query
+        description: |-
+          Matches any subject where the `ethnicity` field matches the string
+          provided.
+        required: false
+        schema:
+          type: string
+      - name: identifiers
+        in: query
+        description: |-
+          Matches any subject where any member of the `identifiers` field matches
+          the string provided.
+
+          **Note:** a logical OR (`||`) is performed across the values when
+          determining whether the subject should be included in the results.
+        required: false
+        schema:
+          type: string
+      - name: vital_status
+        in: query
+        description: |-
+          Matches any subject where the `vital_status` field matches the string
+          provided.
+        required: false
+        schema:
+          type: string
+      - name: age_at_vital_status
+        in: query
+        description: |-
+          Matches any subject where the `age_at_vital_status` field matches the
+          string provided.
+        required: false
+        schema:
+          type: string
+      - name: depositions
+        in: query
+        description: |-
+          Matches any subject where any member of the `depositions` fields match
+          the string provided.
+
+          **Note:** a logical OR (`||`) is performed across the values when
+          determining whether the subject should be included in the results.
+        required: false
+        schema:
+          type: string
+      - name: metadata.unharmonized.<field>
+        in: query
+        description: |-
+          All unharmonized fields should be filterable in the same manner as harmonized fields:
+
+          * Filtering on a singular field should include the `Subject` in the results if the query exactly matches the value of that field for the `Subject` (case-sensitive).
+          * Filtering on field with multiple values should include the `Subject` in the results if the query exactly matches any of the values of the field for that `Subject` (case-sensitive).
+          * Unlike harmonized fields, unharmonized fields must be prefixed with `metadata.unharmonized`.
+
+          **Note:** this query parameter is intended to be symbolic of any unharmonized field. Because of limitations within Swagger UI, it will show up as a query parameter that can be optionally be submitted as part of a request within Swagger UI. Please keep in mind that the literal query parameter `?metadata.unharmonized.<field>=value` is not supported, so attempting to use it within Swagger UI will not work!
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: |-
+          The page to retrieve.
+
+          This is a 1-based index of a page within a page set. The value of `page`
+          **must** default to `1` when this parameter is not provided.
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+      - name: per_page
+        in: query
+        description: |-
+          The number of results per page.
+
+          Each server can select its own default value for `per_page` when this
+          parameter is not provided. That said, the convention within the
+          community is to use `100` as a default value if any value is equally
+          reasonable.
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            link:
+              schema:
+                type: string
+              description: "Links to URLs that may be of interest when paging through paginated responses. This header contains two or more links of interest. The format of the field is as follows: \n\n`Link: <URL>; rel=\"REL\"` \n### Relationships\n\nIn the format above, `URL` represents a valid URL for the link of interest and `REL` is one of four values: \n- `first` (_Required_). A link to the first page in the results (can be the same as `last` if there is only one page).\n- `last` (_Required_). A link to the first page in the results (can be the same as `first` if there is only one page).\n- `next` (_Optional_). A link to the next page (if it exists).\n- `prev` (_Optional_). A link to the previous page (if it exists).\n\n### Requirements\n\n- This header _must_ provide links for at least the `first` and `last` rels.\n - The `prev` and `next` links must exist only (a) when there are multiple pages in the result page set and (b) when the current page is not the first or last page, respectively.\n- This list of links is unordered.\n\n ### Notes\n\n- HTTP 1.1 and HTTP 2.0 dictate that response headers are case insensitive. Though not required, we recommend an all lowercase name of `link` for this response header."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.SubjectsArray'
+        '404':
+          description: |-
+            Not found.
+            Servers that cannot provide line-level data should use this response rather than Forbidden (403), as there is no level of authorization that would allow one to access the information included in the API.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.Errors'
+              example:
+                errors:
+                - kind: UnshareableData
+                  entity: Subjects
+                  reason: Our agreement with data providers prohibits us from sharing line-level data.
+                  message: 'Unable to share data for subjects: our agreement with data providers prohibits us from sharing line-level data.'
+        '422':
+          description: Invalid query or path parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.Errors'
+              example:
+                errors:
+                - kind: InvalidParameters
+                  parameters:
+                  - page
+                  - per_page
+                  reason: Unable to calculate offset.
+                  message: 'Invalid value for parameters ''page'' and ''per_page'': unable to calculate offset.'
 components:
   schemas:
     cde.v1.deposition.DbgapPhsAccession:
@@ -1476,17 +1935,6 @@ components:
 
         Link:
         <https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=CDEDD.ITEM_ID=11459810%20and%20ver_nr=1>
-    cde.v1.namespace.StudyShortTitle:
-      type: string
-      description: |-
-        **`caDSR CDE 11459812 v1.00`**
-
-        This metadata element is defined by the caDSR as "The narrative title used
-        as a textual label for a research data collection. Example – Comparative
-        Molecular Life History of Spontaneous Canine and Human Gliomas".
-
-        Link:
-        <https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=CDEDD.ITEM_ID=11459812%20and%20ver_nr=1>
     cde.v1.organization.Institution:
       type: string
       description: |-
@@ -1645,6 +2093,23 @@ components:
       - Protein
       - DNA
       - RNA
+    cde.v1.sample.TissueType:
+      type: string
+      description: |-
+        **`caDSR CDE 14688604 v1.00`**
+
+        This metadata element is defined by the caDSR as "The category assigned to the
+        cytologic atypia found in cellular molecules, cells, tissues, organs,
+        body fluids, or body excretory products."
+
+        Link:
+        <https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=CDEDD.ITEM_ID=14688604%20and%20ver_nr=1>
+      enum:
+      - Not Reported
+      - Normal
+      - Peritumoral
+      - Tumor
+      - Unknown
     cde.v1.sample.TumorClassification:
       type: string
       description: |-
@@ -1748,6 +2213,16 @@ components:
       - Dead
       - Unknown
       - Unspecified
+    cde.v2.namespace.StudyShortTitle:
+      type: string
+      description: |-
+        **`caDSR CDE 11459812 v2.00`**
+
+        This metadata element is defined by the caDSR as "The acronym or
+        abbreviated form of the title for a research data collection".
+
+        Link:
+        <https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=CDEDD.ITEM_ID=11459812%20and%20ver_nr=2>
     cde.v2.sample.LibrarySelectionMethod:
       type: string
       description: |-
@@ -1797,27 +2272,27 @@ components:
       - OCT
       - Snap Frozen
       - Unknown
-    cde.v2.sample.TissueType:
+    cde.v2.sample.TumorGrade:
       type: string
       description: |-
-        **`caDSR CDE 5432687 v2.00`**
+        **`caDSR CDE 11325685 v2.00`**
 
-        This metadata element is defined by the caDSR as "Text term that represents
-        a description of the kind of tissue collected with respect to disease status
-        or proximity to tumor tissue."
+        This metadata element is defined by the caDSR as "A text term to express
+        the degree of abnormality of cancer cells as a measure of differentiation
+        and aggressiveness.".
 
         Link:
-        <https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=CDEDD.ITEM_ID=5432687%20and%20ver_nr=2>
+        <https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=CDEDD.ITEM_ID=11325685%20and%20ver_nr=2>
       enum:
+      - G1 Low Grade
+      - G2 Intermediate Grade
+      - G3 High Grade
+      - G4 Anaplastic
+      - GB Borderline
+      - GX Grade Cannot Be Assessed
+      - Not Applicable
       - Not Reported
-      - Abnormal
-      - Normal
-      - Peritumoral
-      - Tumor
-      - Non-neoplastic
-      - Unavailable
       - Unknown
-      - Unspecified
     cde.v2.subject.Ethnicity:
       type: string
       description: |-
@@ -2049,7 +2524,7 @@ components:
       - value
       properties:
         value:
-          $ref: '#/components/schemas/cde.v1.namespace.StudyShortTitle'
+          $ref: '#/components/schemas/cde.v2.namespace.StudyShortTitle'
         ancestors:
           type: array
           items:
@@ -2335,7 +2810,7 @@ components:
       - value
       properties:
         value:
-          $ref: '#/components/schemas/cde.v2.sample.TissueType'
+          $ref: '#/components/schemas/cde.v1.sample.TissueType'
         ancestors:
           type: array
           items:
@@ -2358,6 +2833,28 @@ components:
       properties:
         value:
           $ref: '#/components/schemas/cde.v1.sample.TumorClassification'
+        ancestors:
+          type: array
+          items:
+            type: string
+          description: |-
+            The ancestors from which this field was derived.
+
+            Ancestors should be provided as period (`.`) delimited paths
+            from the `metadata` key in the subject response object.
+        details:
+          allOf:
+          - $ref: '#/components/schemas/models.metadata.field.Details'
+        comment:
+          type: string
+          description: A free-text comment field.
+    field.unowned.sample.TumorGrade:
+      type: object
+      required:
+      - value
+      properties:
+        value:
+          $ref: '#/components/schemas/cde.v2.sample.TumorGrade'
         ancestors:
           type: array
           items:
@@ -2402,6 +2899,28 @@ components:
       properties:
         value:
           $ref: '#/components/schemas/models.subject.metadata.AgeAtVitalStatus'
+        ancestors:
+          type: array
+          items:
+            type: string
+          description: |-
+            The ancestors from which this field was derived.
+
+            Ancestors should be provided as period (`.`) delimited paths
+            from the `metadata` key in the subject response object.
+        details:
+          allOf:
+          - $ref: '#/components/schemas/models.metadata.field.Details'
+        comment:
+          type: string
+          description: A free-text comment field.
+    field.unowned.subject.AssociatedDiagnoses:
+      type: object
+      required:
+      - value
+      properties:
+        value:
+          $ref: '#/components/schemas/models.subject.metadata.AssociatedDiagnoses'
         ancestors:
           type: array
           items:
@@ -3195,6 +3714,7 @@ components:
             repository such as dbGaP or EGA, you should also include a gateway and
             link pointing to where that entity can be found in the public
             repository.
+          nullable: true
     models.metadata.common.deposition.Accession:
       oneOf:
       - type: object
@@ -3486,7 +4006,14 @@ components:
           $ref: '#/components/schemas/models.namespace.Identifier'
         name:
           type: string
-          description: The name of the identifier.
+          description: |-
+            **`caDSR CDE 15100774 v1.00`**
+
+            This metadata element is defined by the caDSR as "A unique string of characters
+            used to identify a specimen.".
+
+            Link:
+            <https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=CDEDD.ITEM_ID=15100774%20and%20ver_nr=1>
           example: SampleName001
     models.sample.Metadata:
       allOf:
@@ -3505,6 +4032,7 @@ components:
         - library_strategy
         - library_source_material
         - preservation_method
+        - tumor_grade
         - specimen_molecular_analyte_type
         - identifiers
         properties:
@@ -3555,6 +4083,10 @@ components:
           preservation_method:
             allOf:
             - $ref: '#/components/schemas/field.unowned.sample.PreservationMethod'
+            nullable: true
+          tumor_grade:
+            allOf:
+            - $ref: '#/components/schemas/field.unowned.sample.TumorGrade'
             nullable: true
           specimen_molecular_analyte_type:
             allOf:
@@ -18227,6 +18759,7 @@ components:
         - identifiers
         - vital_status
         - age_at_vital_status
+        - associated_diagnoses
         properties:
           sex:
             allOf:
@@ -18259,6 +18792,12 @@ components:
           age_at_vital_status:
             allOf:
             - $ref: '#/components/schemas/field.unowned.subject.AgeAtVitalStatus'
+            nullable: true
+          associated_diagnoses:
+            type: array
+            items:
+              $ref: '#/components/schemas/field.unowned.subject.AssociatedDiagnoses'
+            description: The associated diagnoses for the subject.
             nullable: true
           unharmonized:
             $ref: '#/components/schemas/fields.Unharmonized'
@@ -18335,6 +18874,26 @@ components:
         * When the age at vital status is collected by the source server in years,
         the number of years is multiplied by 365.25 to arrive at an approximate
         number of days.
+    models.subject.metadata.AssociatedDiagnoses:
+      type: string
+      description: |-
+        The associated_diagnoses for a [`Subject`](crate::Subject).
+
+        This value can be any permissible diagnosis in v1.7.2 of the CCDI Submission
+        Template. These values are from the value set **diagnosis_classification**
+        found in the 'Terms and Value Sets' tab from the [CCDI Submission Template
+        v1.7.2].
+
+        To facilitate quick access to these values, we have provided a slimmed down
+        spreadsheet containing the valid diagnoses:
+
+        1. Download the spreadsheet linked below titled
+        'CCDI_Submission_Template_v1.7.2.diagnosis_values.xlsx'.
+        2. The permissible values are found in column A of the 'diagnosis' tab,
+        titled **diagnosis_category_term**
+
+        [CCDI Submission Template v1.7.2]: https://github.com/CBIIT/ccdi-model/blob/682a99d93b66540bb880ce5899ba8096968a96cf/metadata-manifest/CCDI_Submission_Template_v1.7.2.xlsx
+        [CCDI_Submission_Template_v1.7.2.diagnosis_values.xlsx]: https://cbiit.github.io/ccdi-federation-api/assets/CCDI_Submission_Template_v1.7.2.diagnosis_values.xlsx
     responses.Errors:
       type: object
       description: A wrapper around one or more [errors](Kind).
@@ -18822,7 +19381,7 @@ components:
         api_version:
           type: string
           description: The version of the API that this server supports.
-          example: v1.1.0-rc.1
+          example: v1.2.0
         documentation_url:
           type: string
           description: |-
@@ -19152,6 +19711,8 @@ tags:
   description: List and describe organizations known by this server.
 - name: Info
   description: Information about the API implementation itself.
+- name: Experimental
+  description: Endpoints and features in an experimental phase.
 externalDocs:
   url: https://www.cancer.gov/research/areas/childhood/childhood-cancer-data-initiative
   description: Learn more about the Childhood Cancer Data Initiative
