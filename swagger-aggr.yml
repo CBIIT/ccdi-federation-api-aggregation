@@ -8,6 +8,8 @@ info:
     querying of federated pediatric cancer within the broader community. The goal
     of the API is to support identification of pediatric cancer samples of interest
     via a variety of query parameters.
+    The API is integrated with the [Childhood Participant Index (CPI) Service](https://ccdi.cancer.gov/ccdi-participant-index)
+    through "subject-mapping" endpoint.
     ### CCDI Data Federation Participating Nodes API Access
     * Visit the [documentation homepage](https://cbiit.github.io/ccdi-federation-api)
       to view the complete set of requirements to maintain and deploy a CCDI
