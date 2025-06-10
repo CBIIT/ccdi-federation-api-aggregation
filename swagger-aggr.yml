@@ -23,7 +23,7 @@ info:
     email: NCIChildhoodCancerDataInitiative@mail.nih.gov
   version: v1.2.0
 servers:
-  - url: https://federation-stage.ccdi.cancer.gov/api/v1
+  - url: https://federation.ccdi.cancer.gov/api/v1
     description: CCDI Data Federation Resource API server
 paths:
   /subject:
