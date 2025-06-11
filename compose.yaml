@@ -8,6 +8,11 @@ services:
     environment:
       NODE_ENV: production
       federation_apis: ${federation_apis}
+      cpi_token_url: ${cpi_token_url}
+      cpi_client_secret: ${cpi_client_secret}
+      cpi_client_id: ${cpi_client_id}
+      cpi_url: ${cpi_url}
+      federation_sources: ${federation_sources}
       server_host: "0.0.0.0"
     ports:
       - "3000:3000"

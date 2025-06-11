@@ -1,6 +1,6 @@
 {
   "name": "ccdi-federation-api-aggregation",
-  "version": "1.1.1",
+  "version": "1.2.1",
   "description": "CCDI Data Federation platform API aggregation level implementation.",
   "main": "serverForApi.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "lint": "eslint ./app/**/*.* --ext .js"
   },
   "engines": {
-    "node": ">=23.10.0",
+    "node": ">=24.2.0",
     "npm": ">=10.5.2"
   },
   "repository": {
@@ -43,7 +43,8 @@
     "process": "^0.11.10",
     "psl": "^1.9.0",
     "axios": "^1.8.4",
-    "sanitize": "^2.1.2"
+    "sanitize": "^2.1.2",
+    "tar-fs": "^2.1.3"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
