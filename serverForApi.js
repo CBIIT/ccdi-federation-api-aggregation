@@ -352,7 +352,7 @@ server.listen(3000, SERVER_HOST, () => {
   let outputMsgSrv = {level: "info", server: "resource", note: "CCDI Federation API Aggregation service listening for requests"};
   console.info(JSON.stringify(outputMsgSrv));
   //console.log("CCDI Federation API Aggregation service listening for requests");
-  outputMsgSrv = {level: "info", server: "resource", note: "Port: "+server.address().port + " Server: "+server.address().address};
+  outputMsgSrv = {level: "info", server: "resource", note: "Port: "+server.address().port + " Server: "+server.address().address + " Nodejs: "+process.version};
   console.info(JSON.stringify(outputMsgSrv));
   //console.log('Port :' + server.address().port);
   //console.log('Server:' + server.address().address);
