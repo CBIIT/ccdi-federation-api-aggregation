@@ -2,10 +2,10 @@
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
 
-#ARG NODE_VERSION=24.2.0
+#ARG NODE_VERSION=24.6.0
 
-#FROM node:${NODE_VERSION}-alpine3.21
-FROM node:24.2.0-alpine3.21 AS fnl_base_image
+#FROM node:${NODE_VERSION}-alpine3.22
+FROM node:24.6.0-alpine3.22 AS fnl_base_image
 
 ## Update Alpine option
 #RUN apk update

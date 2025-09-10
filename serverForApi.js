@@ -11,6 +11,7 @@ const specUtils = require("./app/utils/specUtils");
 const cpiUtils = require("./app/utils/cpiUtils");
 const strCpiRequest = "subject-mapping";
 const strSubjectRequest = "subject";
+const strSubjectDiagnosisRequest = "subject-diagnosis";
 
 //certificates are not used, defined by setting rejectUnauthorized
 // const caTreehouse = [fs.readFileSync("./treehouse-cer.pem")];
@@ -28,7 +29,7 @@ const optionsGeneral = {
   headers: {
     Accept: 'application/json',
   },
-  timeout: 9000,
+  timeout: 12000,
   rejectUnauthorized: false
 };
 
@@ -171,11 +172,13 @@ function responseLength(strResponse) {//expects a string parameter
 }
 
 const server = http.createServer((req, res) => {
-  const urlPath = req.url;
-  const reqUrl = url.parse(urlPath, true);
+  const urlPath = req.url;//string with the path and query string
+  //const reqUrl = url.parse(urlPath, true);//Deprecated now; takes a URL string, parses it, and returns a URL object.
+  const parsedUrl = new URL(req.url, `https://${req.headers.host}/`);//WHATWG URL constructor
+
   let outputMsgOrg = {level: "info", server: "resource", note: "request received", endpoint: urlPath};
   console.info(JSON.stringify(outputMsgOrg));
-  //console.info("info", "server="+"resource", '"request received"', "endpoint="+urlPath);
+
   if (!urlPath || (urlPath.length == 0) || (urlPath === '/')) {
     let data = 'CCDI Federation Resource API';
     res.writeHead(200, addResponseHeaders(responseLength(data), 'text/plain'));
@@ -196,7 +199,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, addResponseHeaders(responseLength(data), 'application/json'));
     res.end(data);
   }
-  else if (! specUtils.matchPathToOpenApi(reqUrl.pathname)) {
+  else if (! specUtils.matchPathToOpenApi(parsedUrl.pathname)) {
     let data = urlUtils.getErrorStr404(urlPath);
     let outputMsg = {level: "error", server: "resource", note: "response HTTP 404 invalid", endpoint: urlPath};
     //console.error("error", "server=resource", '"response HTTP 404 invalid"', "endpoint="+urlPath);
@@ -222,7 +225,7 @@ const server = http.createServer((req, res) => {
         console.info(JSON.stringify(outputMsg));
         //console.info("info", "server=resource", '"response from CPI"', "endpoint="+urlPath);
         //if a request was for "subject-mapping" parse IDs and return CPI result. 
-        //TODO Remove Mock data
+  
         cpiUtils.apiToCpi(strRes).then(data => {
           //console.debug("debug typeof cpiResponse", (typeof data));
           if ((data) && (data.participant_ids) && (Array.isArray(data.participant_ids))) {
@@ -247,9 +250,19 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
     //implement CPI communication
     if (urlPath.includes(strCpiRequest)) {
       //TODO make more granual comparison
-      let outputMsg = {level: "info", server: optionsNode.host, note: "CPI request received", endpoint: urlPath};
-      console.info(JSON.stringify(outputMsg));
-      options.path += urlPath.replace(strCpiRequest, strSubjectRequest);
+      const url = new URL(urlPath, `https://${optionsNode.host}/`);
+      const query = new URLSearchParams(url.search);
+      
+      if (query && (query.has("search"))) {
+        options.path += urlPath.replace(strCpiRequest, strSubjectDiagnosisRequest);
+        let outputMsgExperimental = {level: "info", server: optionsNode.host, note: "CPI request received with diagnosis search", endpoint: urlPath};
+        console.info(JSON.stringify(outputMsgExperimental));
+      }
+      else {
+        options.path += urlPath.replace(strCpiRequest, strSubjectRequest);
+        let outputMsgSubject = {level: "info", server: optionsNode.host, note: "CPI request received", endpoint: urlPath};
+        console.info(JSON.stringify(outputMsgSubject));
+      }
      }
     else {
       options.path += urlPath;
@@ -271,7 +284,7 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
           //console.error("error", "server="+options.host, "status="+res.statusCode, "endpoint="+urlPath, '"HTML received"', chunks);
           console.error(JSON.stringify(outputMsgErr));
           outputMsgErr = {level: "error", note: "resource generated a federation server response for received HTML", server: "resourse", endpoint: urlPath};
-          // console.error("error", "resource generated on HTTP response 404", "server="+options.host, "endpoint="+urlPath);
+          //console.error("error", "resource generated on HTTP response 404", "server="+options.host, "endpoint="+urlPath);
           console.error(JSON.stringify(outputMsgErr));
           chunks = urlUtils.getErrorStr404(urlPath);//replace HTML responses with error json
         }

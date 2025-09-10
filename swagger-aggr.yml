@@ -21,7 +21,7 @@ info:
   contact:
     name: Childhood Cancer Data Initiative support email
     email: NCIChildhoodCancerDataInitiative@mail.nih.gov
-  version: v1.2.0
+  version: v1.2.1
 servers:
   - url: https://federation.ccdi.cancer.gov/api/v1
     description: CCDI Data Federation Resource API server
@@ -405,6 +405,14 @@ paths:
 
           **Note:** a logical OR (`||`) is performed across the values when
           determining whether the subject should be included in the results.
+        required: false
+        schema:
+          type: string
+      - name: search
+        in: query
+        description: |-
+          Matches any subject where the `associated_diagnoses` field contains the
+          string provided, ignoring case.
         required: false
         schema:
           type: string
