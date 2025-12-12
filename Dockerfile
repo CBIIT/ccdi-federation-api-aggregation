@@ -12,7 +12,7 @@ FROM node:25.2.1-alpine3.22 AS fnl_base_image
 #RUN apk upgrade
 
 ## Update Alpine busybox
-RUN apk update && apk upgrade busybox
+# RUN apk update && apk upgrade busybox
 
 # ENV federation_apis=${federation_apis}
 
@@ -40,6 +40,10 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 #RUN rm -rf /usr/local/lib/node_modules/npm
 ## Remove modules from the local project
 #RUN mv node_modules/npm /usr/local/lib/node_modules/npm
+
+RUN npm install -g glob@11.1.0
+RUN npm install -g tar@7.5.2
+
 
 # Copy the rest of the source files into the image.
 COPY --chown=node . .
