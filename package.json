@@ -38,13 +38,17 @@
     "express": ">=5.2.1",
     "newrelic": "latest",
     "process": "^0.11.10",
-    "psl": "^1.9.0",
-    "tar-fs": "^2.1.4"
+    "psl": "^1.15.0",
+    "tar-fs": "^3.1.1"
   },
   "devDependencies": {
   },
   "overrides": {
     "brace-expansion": "1.1.12",
-    "form-data": "4.0.4"
+    "form-data": "4.0.5",
+    "glob": "11.1.0",
+    "node-gyp": {
+        "glob": "11.1.0"
+    }
   }
 }
