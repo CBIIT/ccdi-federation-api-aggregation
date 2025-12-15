@@ -4,8 +4,8 @@
 
 #ARG NODE_VERSION=25.2.1
 
-#FROM node:${NODE_VERSION}-alpine3.22
-FROM node:25.2.1-alpine3.22 AS fnl_base_image
+#FROM node:${NODE_VERSION}-alpine3.23
+FROM node:25.2.1-alpine3.23 AS fnl_base_image
 
 ## Update Alpine option
 #RUN apk update
@@ -23,6 +23,8 @@ ENV NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
 ENV NEW_RELIC_LOG=stdout
 
 WORKDIR /usr/src/app
+ENV NPM_VERSION=11.7.0
+RUN npm install -g npm@${NPM_VERSION}
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.npm to speed up subsequent builds.
@@ -43,7 +45,6 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 
 RUN npm install -g glob@11.1.0
 RUN npm install -g tar@7.5.2
-
 
 # Copy the rest of the source files into the image.
 COPY --chown=node . .
