@@ -43,9 +43,9 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 ## Remove modules from the local project
 #RUN mv node_modules/npm /usr/local/lib/node_modules/npm
 
-RUN npm install -g node-gyp@12.1.0
 RUN npm install -g glob@11.1.0
 RUN npm install -g tar@7.5.2
+RUN npm uninstall -g node-gyp
 
 # Copy the rest of the source files into the image.
 COPY --chown=node . .

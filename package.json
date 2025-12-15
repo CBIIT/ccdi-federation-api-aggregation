@@ -46,9 +46,6 @@
   "overrides": {
     "brace-expansion": "1.1.12",
     "form-data": "4.0.5",
-    "glob": "11.1.0",
-    "node-gyp": {
-        "glob": "11.1.0"
-    }
+    "glob": "11.1.0"
   }
 }
