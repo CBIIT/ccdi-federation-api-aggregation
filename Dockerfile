@@ -25,6 +25,8 @@ ENV NEW_RELIC_LOG=stdout
 WORKDIR /usr/src/app
 ENV NPM_VERSION=11.7.0
 RUN npm install -g npm@${NPM_VERSION}
+RUN npm install -g glob@11.1.0
+RUN npm install -g tar@7.5.2
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.npm to speed up subsequent builds.
@@ -35,6 +37,9 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=cache,target=/root/.npm \
     npm ci --omit=dev
 
+# Remove npm packages after the application Clean Install
+RUN npm r -g npm
+
 ## Below to update npm modules option
 ## Install node_modules into the local project, the latest version
 #RUN npm install npm
@@ -42,10 +47,6 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 #RUN rm -rf /usr/local/lib/node_modules/npm
 ## Remove modules from the local project
 #RUN mv node_modules/npm /usr/local/lib/node_modules/npm
-
-RUN npm install -g glob@11.1.0
-RUN npm install -g tar@7.5.2
-RUN npm uninstall -g node-gyp
 
 # Copy the rest of the source files into the image.
 COPY --chown=node . .
