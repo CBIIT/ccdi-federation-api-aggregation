@@ -12,6 +12,7 @@ const cpiUtils = require("./app/utils/cpiUtils");
 const strCpiRequest = "subject-mapping";
 const strSubjectRequest = "subject";
 const strSubjectDiagnosisRequest = "subject-diagnosis";
+const pkg = require('./package.json');
 
 //certificates are not used, defined by setting rejectUnauthorized
 // const caTreehouse = [fs.readFileSync("./treehouse-cer.pem")];
@@ -27,11 +28,18 @@ const optionsGeneral = {
   //path: urlPath,
   method: 'GET',
   headers: {
-    Accept: 'application/json',
+    Accept: 'application/json'
   },
   timeout: 12000,
   rejectUnauthorized: false
 };
+
+// Build a default User-Agent identifying this service and runtime.
+// Allow overriding with the USER_AGENT env var when necessary.
+const defaultUserAgent = `Federation Resource API/${pkg.version} node/${process.version} (${process.platform})`;
+optionsGeneral.headers['User-Agent'] = process.env.USER_AGENT || defaultUserAgent;
+let infoMsgUA = {level: "info", server: "resource", note: "User-Agent set", userAgent: optionsGeneral.headers['User-Agent']};
+console.info(JSON.stringify(infoMsgUA));
 
 // hosts registration is static for now
 // host are defined in env var federation_apis
@@ -39,12 +47,21 @@ const optionsGeneral = {
 // expected are hosts from registered servers only
 var apiHosts = process.env.federation_apis.split(",");
 var apiSources = [];
+var federationDomainNamespace = [];
 if (process.env.federation_sources) {
   apiSources = process.env.federation_sources.split(",");
 }
 else {
   //console.error("error", "env federation_sources is not defined");
   let infoMsg0 = {level:"error", server: "resource", note: "env federation_sources is not defined"};
+  console.error(JSON.stringify(infoMsg0))
+};
+if (process.env.federation_domain_namespace) {
+  federationDomainNamespace = process.env.federation_domain_namespace.split(",");
+}
+else {
+  //console.error("error", "env federation_sources is not defined");
+  let infoMsg0 = {level:"error", server: "resource", note: "env federation_domain_namespace is not defined"};
   console.error(JSON.stringify(infoMsg0))
 };
 
@@ -78,6 +95,9 @@ console.info(JSON.stringify(infoMsg));
 var apiHostSourceMap = urlUtils.mapHostToSource(apiDomains, apiSources);
 
 const startApiUrl = "/api/v";//we do not validate the version
+
+// provide federationDomainNamespace to cpiUtils
+cpiUtils.setFederationDomainNamespace(federationDomainNamespace);
 
 //CPI configuration
 cpiUtils.cpiInit();

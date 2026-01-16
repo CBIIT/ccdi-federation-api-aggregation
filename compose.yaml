@@ -13,6 +13,7 @@ services:
       cpi_client_id: ${cpi_client_id}
       cpi_url: ${cpi_url}
       federation_sources: ${federation_sources}
+      federation_domain_namespace: ${federation_domain_namespace}
       server_host: "0.0.0.0"
     ports:
       - "3000:3000"
