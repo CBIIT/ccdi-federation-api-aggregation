@@ -14,6 +14,7 @@ services:
       cpi_url: ${cpi_url}
       federation_sources: ${federation_sources}
       federation_domain_namespace: ${federation_domain_namespace}
+      USER_AGENT: ${USER_AGENT}
       server_host: "0.0.0.0"
     ports:
       - "3000:3000"

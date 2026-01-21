@@ -17,7 +17,7 @@ FROM node:25.3.0-alpine3.23 AS fnl_base_image
 # ENV federation_apis=${federation_apis}
 
 # Use production node environment by default.
-ENV NODE_ENV production
+ENV NODE_ENV=production
 ENV NEW_RELIC_NO_CONFIG_FILE=true
 ENV NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
 ENV NEW_RELIC_LOG=stdout
