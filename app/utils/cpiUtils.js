@@ -259,7 +259,7 @@ async function apiToCpi(apiSubjectData) {
         console.info(JSON.stringify(outputMsgResp));
         // start CPI request workflow
         //console.info("info IDs sent to CPI", JSON.stringify(cpiIds));
-        outputMsgResp = {level: "info", ids: JSON.stringify(cpiIds)};
+        outputMsgResp = {level: "info", ids: cpiIds, server: "resource", endpoint: "subject-mapping", note: "API Participant IDs for CPI"};
         console.info(JSON.stringify(outputMsgResp));
         var cpiResponse = await getCPIRequest(currToken, cpiIds);
         //var cpiResponse = await getCPIRequest(currToken, requestBodyCpi);//this is a sample data to send to CPI
