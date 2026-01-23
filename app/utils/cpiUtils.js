@@ -38,6 +38,19 @@ const cpiUrl = process.env.cpi_url;
 
 axios.defaults.timeout = 15000;
 
+// federationDomainNamespace provided by serverForApi.js
+let federationDomainNamespace = [];
+function setFederationDomainNamespace(arr) {
+  if (Array.isArray(arr)) {
+    federationDomainNamespace = arr;
+    let outputMsg = {level: "info", server: "resource", note: "cpiUtils federationDomainNamespace set", value: federationDomainNamespace};
+    console.info(JSON.stringify(outputMsg));
+  } else {
+    let outputMsg = {level: "error", server: "resource", note: "cpiUtils setFederationDomainNamespace expects an array"};
+    console.error(JSON.stringify(outputMsg));
+  }
+}
+ 
 // console.debug("debug", JSON.stringify(optionsToken));
 //strCpiMock is mock CPI response data 
 const strCpiMock = JSON.stringify({supplementary_domains: [], participant_ids: 
@@ -152,11 +165,26 @@ function extractIdFromData(data) {
       if (item.data && Array.isArray(item.data)) {
         // Iterate over the "data" array to find "id" and "metadata.depositions" objects
         item.data.forEach(dataItem => {
-          if ((dataItem.id) && dataItem.kind === 'Participant') {
-            // Create a new object with the id and merge it with "depositions" from metadata
-            let extractedData = {source: item.source, name: dataItem.id.name};
-            result.push(extractedData); // Push the merged object into the result array
+          if ((dataItem.id) && (dataItem.id.name)) {
+            if (dataItem.kind === 'Participant') {//send only this kind to CPI 
+              // Create a new object with the id
+              let extractedData = null; // only push when extractedData was successfully created
+              // If federationDomainNamespace is not provided or does not include item.source,
+              // keep the source as CPI domain. 
+              if (!federationDomainNamespace.includes(item.source)) {
+                extractedData = {source: item.source, name: dataItem.id.name};
+                result.push(extractedData); // Push the merged object into the result array
+              } // Otherwise use namespaceas CPI domain if the data is there.
+              else if ((dataItem.id.namespace) && (dataItem.id.namespace.name)) {
+                extractedData = {source: dataItem.id.namespace.name, name: dataItem.id.name};
+                result.push(extractedData); // Push the merged object into the result array
+              }
+           }
           }
+          else {// log an error if subject.data.id format is not as expected
+            let outputMsgRespId = {level: "error", server: "resource", note: "parseSourceSubjectIds: participant id or name is missing in subject data " + item.source};
+            console.error(JSON.stringify(outputMsgRespId));
+           }
         });
       }
     });
@@ -213,7 +241,6 @@ function generateCpiRequestBody(data) {
   //console.debug("debug", "generateCpiBody result\n", loadData);
   return loadData;
 };
-
 //apiToCpi returns JSON response string Promise
 async function apiToCpi(apiSubjectData) {
   if (! isCpiConfigured()) {
@@ -232,7 +259,7 @@ async function apiToCpi(apiSubjectData) {
         console.info(JSON.stringify(outputMsgResp));
         // start CPI request workflow
         //console.info("info IDs sent to CPI", JSON.stringify(cpiIds));
-        outputMsgResp = {level: "info", ids: JSON.stringify(cpiIds)};
+        outputMsgResp = {level: "info", ids: cpiIds, server: "resource", endpoint: "subject-mapping", note: "API Participant IDs for CPI"};
         console.info(JSON.stringify(outputMsgResp));
         var cpiResponse = await getCPIRequest(currToken, cpiIds);
         //var cpiResponse = await getCPIRequest(currToken, requestBodyCpi);//this is a sample data to send to CPI
@@ -334,6 +361,7 @@ module.exports = {
     parseSubjectIds,
     generateCpiRequestBody,
     isCpiConfigured,
+    setFederationDomainNamespace,
     cpiInit,
     apiToCpi
 }
