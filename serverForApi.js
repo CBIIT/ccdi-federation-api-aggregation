@@ -60,7 +60,6 @@ if (process.env.federation_domain_namespace) {
   federationDomainNamespace = process.env.federation_domain_namespace.split(",");
 }
 else {
-  //console.error("error", "env federation_sources is not defined");
   let infoMsg0 = {level:"error", server: "resource", note: "env federation_domain_namespace is not defined"};
   console.error(JSON.stringify(infoMsg0))
 };
