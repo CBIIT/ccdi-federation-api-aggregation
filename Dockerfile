@@ -14,6 +14,9 @@ FROM node:25.6.0-alpine3.23 AS fnl_base_image
 ## Update Alpine busybox
 # RUN apk update && apk upgrade busybox
 
+## Update Alpine openssl
+RUN apk update && apk upgrade openssl
+
 # ENV federation_apis=${federation_apis}
 
 # Use production node environment by default.
