@@ -333,7 +333,7 @@ async function getCPIRequest(accessToken, requestBody) {
  
         const response = await axios.get(cpiUrl, {
             headers,
-            timeout: 15000,
+            timeout: 60000,
             data: requestBody, // axios GET doesn't support json, so we use object instead
             httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
         });

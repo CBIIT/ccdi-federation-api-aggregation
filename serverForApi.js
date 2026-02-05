@@ -5,7 +5,7 @@ const newrelic = require('newrelic');
 const http = require("http");
 const https = require("https");
 const process = require("process");
-const url = require('url');
+//const url = require('url');
 const urlUtils = require("./app/utils/urlUtils");
 const specUtils = require("./app/utils/specUtils");
 const cpiUtils = require("./app/utils/cpiUtils");
@@ -30,7 +30,7 @@ const optionsGeneral = {
   headers: {
     Accept: 'application/json'
   },
-  timeout: 12000,
+  timeout: 120000,//120 seconds default timeout for response from federation nodes; used in getresultHttp
   rejectUnauthorized: false
 };
 
@@ -40,6 +40,28 @@ const defaultUserAgent = `Federation Resource API/${pkg.version} node/${process.
 optionsGeneral.headers['User-Agent'] = process.env.USER_AGENT || defaultUserAgent;
 let infoMsgUA = {level: "info", server: "resource", note: "User-Agent set", userAgent: optionsGeneral.headers['User-Agent']};
 console.info(JSON.stringify(infoMsgUA));
+
+// Set timeout from environment variable federation_request_timeout (given in seconds)
+var requestTimeoutEnv = process.env.federation_request_timeout;
+if (requestTimeoutEnv) {
+  let infoMsg = {level: "info", server: "resource", note: "federation_request_timeout environment value is received: " + requestTimeoutEnv};
+  console.info(JSON.stringify(infoMsg));
+  const trimmed = ('' + requestTimeoutEnv).trim();
+  const parsed = Number(trimmed);
+  if (Number.isInteger(parsed) && parsed > 0) {
+    optionsGeneral.timeout = parsed*1000; // change the value to milliseconds in options
+    let infoMsg1 = {level: "info", server: "resource", note: "federation request timeout set in milliseconds to " + optionsGeneral.timeout};
+    console.info(JSON.stringify(infoMsg1));
+  }
+  else {
+    let errMsg = {level: "error", server: "resource", note: "invalid federation_request_timeout; must be a positive integer (seconds) " + requestTimeoutEnv};
+    console.error(JSON.stringify(errMsg));
+  }
+}
+else {
+    let errMsg = {level: "error", server: "resource", note: "federation_request_timeout environment not provided, using default 120 seconds"};
+    console.error(JSON.stringify(errMsg));
+}
 
 // hosts registration is static for now
 // host are defined in env var federation_apis

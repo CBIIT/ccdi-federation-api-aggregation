@@ -2,10 +2,10 @@
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
 
-#ARG NODE_VERSION=25.3.0
+#ARG NODE_VERSION=25.6.0
 
 #FROM node:${NODE_VERSION}-alpine3.23
-FROM node:25.3.0-alpine3.23 AS fnl_base_image
+FROM node:25.6.0-alpine3.23 AS fnl_base_image
 
 ## Update Alpine option
 #RUN apk update
@@ -13,6 +13,9 @@ FROM node:25.3.0-alpine3.23 AS fnl_base_image
 
 ## Update Alpine busybox
 # RUN apk update && apk upgrade busybox
+
+## Update Alpine openssl
+RUN apk update && apk upgrade openssl
 
 # ENV federation_apis=${federation_apis}
 
@@ -23,10 +26,10 @@ ENV NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
 ENV NEW_RELIC_LOG=stdout
 
 WORKDIR /usr/src/app
-ENV NPM_VERSION=11.7.0
+ENV NPM_VERSION=11.8.0
 RUN npm install -g npm@${NPM_VERSION}
 RUN npm install -g glob@11.1.0
-RUN npm install -g tar@7.5.4
+RUN npm install -g tar@7.5.7
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.npm to speed up subsequent builds.
