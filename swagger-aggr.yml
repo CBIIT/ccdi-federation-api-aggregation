@@ -1868,87 +1868,13 @@ components:
     cde.v1.namespace.StudyId:
       type: string
       description: |-
-        **`caDSR CDE 12960571 v1.00`**
+        **`caDSR CDE 6380045 v1.00`**
 
-        This metadata element is defined by the caDSR as "A sequence of characters
-        used to identify, name, or characterize a pediatric study.".
+        This metadata element is defined by the caDSR as "A unique identifier
+        for a study.".
 
         Link:
-        <https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=CDEDD.ITEM_ID=12960571%20and%20ver_nr=1>
-      enum:
-      - AALL0232
-      - AALL0331
-      - AALL03B1
-      - AALL0434
-      - AALL08B1
-      - AAML03P1
-      - AAML0531
-      - AAML1031
-      - AEIOPAML2002
-      - AEWS0031
-      - AEWS0331
-      - AEWS07P1
-      - AEWS1031
-      - AEWS1221
-      - AGCT0132
-      - AGCT01P1
-      - AGCT0521
-      - AHOD0031
-      - AHOD03P1
-      - AHOD0431
-      - AHOD0831
-      - AHOD1221
-      - AHOD1331
-      - AIEOPLAM92
-      - AMLBFM-Registry2012
-      - AMLBFM1998
-      - AMLBFM2004
-      - AMLBFM2012
-      - AMLBFMRegistry2017
-      - AOST0121
-      - AOST01P1
-      - AOST0221
-      - AOST0331/EURAMOS1
-      - AOST1321
-      - AOST1421
-      - CCG-782
-      - CCG-7942
-      - DBAML01
-      - EE99
-      - EICESS92
-      - GC1
-      - GC2
-      - GOG0078
-      - GOG0090
-      - GOG0116
-      - INT133
-      - JACLSAML99
-      - JPLSGAML05
-      - MRCAML12
-      - MRCAML15
-      - NOPHOAML2004
-      - NOPHOAML2012
-      - OS2006
-      - P9749
-      - P9754
-      - POG9049
-      - PPLLSGAML98
-      - REGOBONE
-      - Sarcome13/OS2016
-      - SCFEELAM02
-      - SJCRHAML02
-      - TCGM2004
-      - TE04
-      - TE05
-      - TE08
-      - TE09
-      - TE13
-      - TE20
-      - TE22
-      - TGM85
-      - TGM90
-      - TGM95
-      - TIP
+        <https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=CDEDD.ITEM_ID=6380045%20and%20ver_nr=1>
     cde.v1.namespace.StudyName:
       type: string
       description: |-
@@ -1959,63 +1885,6 @@ components:
 
         Link:
         <https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=CDEDD.ITEM_ID=11459810%20and%20ver_nr=1>
-    cde.v1.organization.Institution:
-      type: string
-      description: |-
-        **`caDSR CDE 12662779 v1.00`**
-
-        This metadata element is defined by the caDSR as "A sequence of characters
-        used to identify, name, or characterize the laboratory, institute, or
-        consortium that provided the information.".
-
-        Link:
-        <https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=CDEDD.ITEM_ID=12662779%20and%20ver_nr=1>
-      enum:
-      - AIEOP
-      - BFM-SG
-      - BOCG
-      - C3P
-      - CBTN
-      - CCLG
-      - CHLA
-      - COG
-      - COSS-GPOH
-      - CRCTU
-      - CWS
-      - DCOG
-      - DePICT
-      - DFCI
-      - EORTC
-      - EpSSG
-      - EuRBG
-      - EURO-EWING
-      - FSG
-      - GALOP
-      - GEIS
-      - GPOH
-      - IDIPGR
-      - ISG
-      - JACLS
-      - JCCG
-      - JINCS
-      - JNBSG
-      - JPLSG
-      - MRC
-      - NOPHO
-      - NRG-Oncology
-      - PNOC
-      - PPLLSG
-      - RBTR
-      - SFCE
-      - SIOP MMT
-      - SIOPE
-      - SIOPEN
-      - SJCRH
-      - SOPOBE
-      - SSG
-      - Treehouse
-      - UCL
-      - UK
     cde.v1.sample.DiagnosisCategory:
       type: string
       description: |-
@@ -2378,6 +2247,16 @@ components:
       - Not Hispanic or Latino
       - Unknown
       - Not reported
+    cde.v4.organization.Institution:
+      type: string
+      description: |-
+        **`caDSR CDE 1100 v4.00`**
+
+        This metadata element is defined by the caDSR as "the name of the
+        organization entering patients on a clinical trial.".
+
+        Link:
+        <https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=CDEDD.ITEM_ID=1100%20and%20ver_nr=4>
     field.UnharmonizedField:
       oneOf:
       - $ref: '#/components/schemas/field.owned.Field'
@@ -2612,7 +2491,7 @@ components:
       - value
       properties:
         value:
-          $ref: '#/components/schemas/cde.v1.organization.Institution'
+          $ref: '#/components/schemas/cde.v4.organization.Institution'
         ancestors:
           type: array
           items:
