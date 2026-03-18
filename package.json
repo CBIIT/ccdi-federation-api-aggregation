@@ -9,8 +9,8 @@
     "lint": "eslint ./app/**/*.* --ext .js"
   },
   "engines": {
-    "node": ">=25.5.0",
-    "npm": ">=11.8.0"
+    "node": ">=25.8.1",
+    "npm": ">=11.11.1"
   },
   "repository": {
     "type": "git",
