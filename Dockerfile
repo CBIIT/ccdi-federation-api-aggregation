@@ -16,6 +16,7 @@ FROM node:25.8.1-alpine3.23 AS fnl_base_image
 
 ## Update Alpine openssl
 RUN apk update && apk upgrade openssl
+RUN apk update && apk upgrade zlib
 
 # ENV federation_apis=${federation_apis}
 
@@ -26,10 +27,10 @@ ENV NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
 ENV NEW_RELIC_LOG=stdout
 
 WORKDIR /usr/src/app
-ENV NPM_VERSION=11.8.0
+ENV NPM_VERSION=11.11.1
 RUN npm install -g npm@${NPM_VERSION}
-RUN npm install -g glob@11.1.0
-RUN npm install -g tar@7.5.7
+RUN npm install -g glob@13.0.6
+RUN npm install -g tar@7.5.11
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.npm to speed up subsequent builds.
