@@ -13,7 +13,6 @@ const strCpiRequest = "subject-mapping";
 const strSubjectRequest = "subject";
 const strSubjectDiagnosisRequest = "subject-diagnosis";
 const pkg = require('./package.json');
-const { setTimeout: delayTest } = require('timers/promises'); // using the built-in timers/promises module
 
 //certificates are not used, defined by setting rejectUnauthorized
 // const caTreehouse = [fs.readFileSync("./treehouse-cer.pem")];
@@ -213,7 +212,7 @@ function responseLength(strResponse) {//expects a string parameter
  return Buffer.byteLength(strResponse, 'utf8') +'';
 }
 
-const server = http.createServer(async  (req, res) => {
+const server = http.createServer((req, res) => {
   const urlPath = req.url;//string with the path and query string
   //const reqUrl = url.parse(urlPath, true);//Deprecated now; takes a URL string, parses it, and returns a URL object.
   const parsedUrl = new URL(req.url, `https://${req.headers.host}/`);//WHATWG URL constructor
@@ -228,12 +227,6 @@ const server = http.createServer(async  (req, res) => {
   }
   else if (urlPath == "/welcome") {
     let data = 'Welcome to CCDI Federation Resource API';
-    res.writeHead(200, addResponseHeaders(responseLength(data), 'text/plain'));
-    res.end(data);
-  }
-  else if (urlPath == "/delayed-response") {
-    let data = 'CCDI Federation Resource API delayed response';
-    await delayTest( optionsGeneral.timeout+10000); // Wait for +10 seconds above allowed timeout handling test in clients
     res.writeHead(200, addResponseHeaders(responseLength(data), 'text/plain'));
     res.end(data);
   } 
