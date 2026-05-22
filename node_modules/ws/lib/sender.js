@@ -4,6 +4,9 @@
 
 const { Duplex } = require('stream');
 const { randomFillSync } = require('crypto');
+const {
+  types: { isUint8Array }
+} = require('util');
 
 const PerMessageDeflate = require('./permessage-deflate');
 const { EMPTY_BUFFER, kWebSocket, NOOP } = require('./constants');
@@ -200,8 +203,10 @@ class Sender {
 
       if (typeof data === 'string') {
         buf.write(data, 2);
-      } else {
+      } else if (isUint8Array(data)) {
         buf.set(data, 2);
+      } else {
+        throw new TypeError('Second argument must be a string or a Uint8Array');
       }
     }
 
@@ -551,7 +556,7 @@ class Sender {
   /**
    * Sends a frame.
    *
-   * @param {Buffer[]} list The frame to send
+   * @param {(Buffer | String)[]} list The frame to send
    * @param {Function} [cb] Callback
    * @private
    */

@@ -16,20 +16,8 @@ module.exports = [
   },
   {
     type: InstrumentationDescriptor.TYPE_WEB_FRAMEWORK,
-    moduleName: 'koa-router',
-    shimName: 'koa',
-    onRequire: require('./router-instrumentation')
-  },
-  {
-    type: InstrumentationDescriptor.TYPE_WEB_FRAMEWORK,
     moduleName: '@koa/router',
     shimName: 'koa',
     onRequire: require('./router-instrumentation')
-  },
-  {
-    type: InstrumentationDescriptor.TYPE_WEB_FRAMEWORK,
-    moduleName: 'koa-route',
-    shimName: 'koa',
-    onRequire: require('./route-instrumentation')
   }
 ]
