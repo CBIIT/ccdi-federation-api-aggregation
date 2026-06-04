@@ -42,6 +42,24 @@ class Transformer {
   free () {}
 
   /**
+   * The npm package name being instrumented.
+   *
+   * @returns {string}
+   */
+  get moduleName () {
+    return this.#moduleName
+  }
+
+  /**
+   * The relative file path within the npm package being instrumented.
+   *
+   * @returns {string}
+   */
+  get filePath () {
+    return this.#filePath
+  }
+
+  /**
    * Instruments `code` by injecting diagnostics_channel tracing around the
    * target functions defined by this transformer's configs.
    *

@@ -104,6 +104,19 @@ export class InstrumentationMatcher {
 export class Transformer {
   private constructor();
   free(): void;
+
+  /**
+   * The name of the module to transform.
+   */
+  get moduleName(): string;
+
+  /**
+   * The relative file path within the npm package being instrumented.
+   *
+   * @returns {string}
+   */
+  get filePath(): string;
+
   /**
    * Transform JavaScript code and optionally sourcemap.
    *
