@@ -15,7 +15,9 @@ FROM node:26.1.0-alpine3.23 AS fnl_base_image
 # RUN apk update && apk upgrade busybox
 
 ## Update Alpine openssl
-RUN apk update && apk upgrade openssl
+# Dynamically pulls the latest, patched version (3.5.7-r0 or newer)
+RUN apk update && apk upgrade --no-cache openssl libcrypto3 libssl3
+
 # RUN apk update && apk upgrade zlib
 RUN apk update && apk upgrade musl
 
