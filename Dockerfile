@@ -2,9 +2,9 @@
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
 
-#ARG NODE_VERSION=26.3.1
+#ARG NODE_VERSION=26.5.0
 
-#FROM node:${NODE_VERSION}-alpine3.23
+#FROM node:${NODE_VERSION}-alpine3.24
 FROM node:26.5.0-alpine3.24 AS fnl_base_image
 
 ## Update Alpine option
@@ -33,7 +33,7 @@ WORKDIR /usr/src/app
 ENV NPM_VERSION=12.0.1
 RUN npm install -g npm@${NPM_VERSION}
 RUN npm install -g glob@13.0.6
-RUN npm install -g tar@7.5.16
+RUN npm install -g tar@7.5.19
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.npm to speed up subsequent builds.
