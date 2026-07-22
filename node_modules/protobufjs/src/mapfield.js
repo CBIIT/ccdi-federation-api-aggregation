@@ -3,7 +3,15 @@ module.exports = MapField;
 
 // extends Field
 var Field = require("./field");
-((MapField.prototype = Object.create(Field.prototype)).constructor = MapField).className = "MapField";
+MapField.prototype = Object.create(Field.prototype, {
+    constructor: {
+        value: MapField,
+        writable: true,
+        enumerable: false,
+        configurable: true
+    }
+});
+MapField.className = "MapField";
 
 var types   = require("./types"),
     util    = require("./util");
@@ -65,7 +73,14 @@ function MapField(name, id, keyType, type, options, comment) {
  * @throws {TypeError} If arguments are invalid
  */
 MapField.fromJSON = function fromJSON(name, json) {
-    return new MapField(name, json.id, json.keyType, json.type, json.options, json.comment);
+    var field = new MapField(name, json.id, json.keyType, json.type, json.options, json.comment);
+    if (json.protoName)
+        field.protoName = json.protoName;
+    if (json.jsonName !== undefined)
+        field.jsonName = json.jsonName;
+    else if (json.options && json.options.json_name !== undefined)
+        field.jsonName = json.options.json_name;
+    return field;
 };
 
 /**
@@ -76,12 +91,14 @@ MapField.fromJSON = function fromJSON(name, json) {
 MapField.prototype.toJSON = function toJSON(toJSONOptions) {
     var keepComments = toJSONOptions ? Boolean(toJSONOptions.keepComments) : false;
     return util.toObject([
-        "keyType" , this.keyType,
-        "type"    , this.type,
-        "id"      , this.id,
-        "extend"  , this.extend,
-        "options" , this.options,
-        "comment" , keepComments ? this.comment : undefined
+        "keyType"      , this.keyType,
+        "type"         , this.type,
+        "id"           , this.id,
+        "extend"       , this.extend,
+        "protoName"    , this.protoName !== this.name ? this.protoName : undefined,
+        "jsonName"     , this.jsonName !== util.jsonName(this.protoName || this.name) ? this.jsonName : undefined,
+        "options"      , this.options,
+        "comment"      , keepComments ? this.comment : undefined
     ]);
 };
 
@@ -108,6 +125,7 @@ MapField.prototype.resolve = function resolve() {
  * @param {"double"|"float"|"int32"|"uint32"|"sint32"|"fixed32"|"sfixed32"|"int64"|"uint64"|"sint64"|"fixed64"|"sfixed64"|"bool"|"string"|"bytes"|Object|Constructor<{}>} fieldValueType Field value type
  * @returns {FieldDecorator} Decorator function
  * @template T extends { [key: string]: number | Long | string | boolean | Uint8Array | Buffer | number[] | Message<{}> }
+ * @deprecated Legacy TypeScript decorator support. Will be removed in a future release.
  */
 MapField.d = function decorateMapField(fieldId, fieldKeyType, fieldValueType) {
 

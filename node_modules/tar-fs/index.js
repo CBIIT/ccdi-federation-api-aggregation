@@ -209,6 +209,7 @@ exports.extract = function extract (cwd, opts) {
 
     function stat (err) {
       if (err) return next(err)
+      if (path.join(name, '.') === path.join(cwd, '.')) return next() // do not touch the extraction root itself
       utimes(name, header, function (err) {
         if (err) return next(err)
         if (win32) return next()
@@ -220,7 +221,8 @@ exports.extract = function extract (cwd, opts) {
       if (win32) return next() // skip symlinks on win for now before it can be tested
       xfs.unlink(name, function () {
         const dst = path.resolve(path.dirname(name), header.linkname)
-        if (!inCwd(dst) && validateSymLinks) return next(new Error(name + ' is not a valid symlink'))
+        // strip shifts the resolution anchor, so a relative linkname may now escape - reject regardless of validateSymlinks
+        if (!inCwd(dst) && (validateSymLinks || opts.strip)) return next(new Error(name + ' is not a valid symlink'))
 
         validateNotSymlink(xfs, dst, path.join(cwd, '.'), function (err, valid) {
           if (err) return next(err)
@@ -255,17 +257,26 @@ exports.extract = function extract (cwd, opts) {
     }
 
     function onfile () {
-      const ws = xfs.createWriteStream(name)
-      const rs = mapStream(stream, header)
-
-      ws.on('error', function (err) { // always forward errors on destroy
-        rs.destroy(err)
+      xfs.lstat(name, function (err, st) {
+        if (!err && st.isSymbolicLink()) return xfs.unlink(name, onwrite) // never write through an existing symlink
+        onwrite()
       })
 
-      pump(rs, ws, function (err) {
+      function onwrite (err) {
         if (err) return next(err)
-        ws.on('close', stat)
-      })
+
+        const ws = xfs.createWriteStream(name)
+        const rs = mapStream(stream, header)
+
+        ws.on('error', function (err) { // always forward errors on destroy
+          rs.destroy(err)
+        })
+
+        pump(rs, ws, function (err) {
+          if (err) return next(err)
+          ws.on('close', stat)
+        })
+      }
     }
   }
 
@@ -298,7 +309,7 @@ exports.extract = function extract (cwd, opts) {
 
     if (!chmod) return cb()
 
-    const mode = (header.mode | (header.type === 'directory' ? dmode : fmode)) & umask
+    const mode = (header.mode | (header.type === 'directory' ? dmode : fmode)) & umask & 0o777 // never extract setuid/setgid/sticky bits
 
     if (chown && own) chown.call(xfs, name, header.uid, header.gid, onchown)
     else onchown(null)
@@ -345,6 +356,10 @@ function validate (fs, name, root, cb) {
   })
 }
 
+function inside (root, name) {
+  return name === root || name.startsWith(root + path.sep)
+}
+
 function noop () {}
 
 function echo (name) {
@@ -358,12 +373,15 @@ function normalize (name) {
 function statAll (fs, stat, cwd, ignore, entries, sort) {
   if (!entries) entries = ['.']
   const queue = entries.slice(0)
+  const root = path.resolve(cwd)
 
   return function loop (callback) {
     if (!queue.length) return callback(null)
 
     const next = queue.shift()
     const nextAbs = path.join(cwd, next)
+
+    if (!inside(root, path.resolve(cwd, next))) return callback(new Error(next + ' is not a valid path')) // do not pack outside cwd
 
     stat.call(fs, nextAbs, function (err, stat) {
       // ignore errors if the files were deleted while buffering

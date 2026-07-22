@@ -5,7 +5,7 @@
 #ARG NODE_VERSION=26.3.1
 
 #FROM node:${NODE_VERSION}-alpine3.23
-FROM node:26.3.1-alpine3.24 AS fnl_base_image
+FROM node:26.5.0-alpine3.24 AS fnl_base_image
 
 ## Update Alpine option
 #RUN apk update
@@ -30,7 +30,7 @@ ENV NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
 ENV NEW_RELIC_LOG=stdout
 
 WORKDIR /usr/src/app
-ENV NPM_VERSION=11.17.0
+ENV NPM_VERSION=12.0.1
 RUN npm install -g npm@${NPM_VERSION}
 RUN npm install -g glob@13.0.6
 RUN npm install -g tar@7.5.16
