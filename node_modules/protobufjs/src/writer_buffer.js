@@ -3,7 +3,14 @@ module.exports = BufferWriter;
 
 // extends Writer
 var Writer = require("./writer");
-(BufferWriter.prototype = Object.create(Writer.prototype)).constructor = BufferWriter;
+BufferWriter.prototype = Object.create(Writer.prototype, {
+    constructor: {
+        value: BufferWriter,
+        writable: true,
+        enumerable: false,
+        configurable: true
+    }
+});
 
 var util = require("./util/minimal");
 
@@ -17,6 +24,8 @@ function BufferWriter() {
     Writer.call(this);
 }
 
+var writeStringBuffer;
+
 BufferWriter._configure = function () {
     /**
      * Allocates a buffer of the specified size.
@@ -24,19 +33,14 @@ BufferWriter._configure = function () {
      * @param {number} size Buffer size
      * @returns {Buffer} Buffer
      */
-    BufferWriter.alloc = util._Buffer_allocUnsafe;
+    BufferWriter.alloc = util.Buffer && util.Buffer.allocUnsafe;
 
-    BufferWriter.writeBytesBuffer = util.Buffer && util.Buffer.prototype instanceof Uint8Array && util.Buffer.prototype.set.name === "set"
-        ? function writeBytesBuffer_set(val, buf, pos) {
-          buf.set(val, pos); // faster than copy (requires node >= 4 where Buffers extend Uint8Array and set is properly inherited)
-          // also works for plain array values
+    writeStringBuffer = util.Buffer && util.Buffer.prototype.utf8Write
+        ? function writeStringBuffer_utf8Write(val, buf, pos) {
+            return buf.utf8Write(val, pos);
         }
-        /* istanbul ignore next */
-        : function writeBytesBuffer_copy(val, buf, pos) {
-          if (val.copy) // Buffer values
-            val.copy(buf, pos, 0, val.length);
-          else for (var i = 0; i < val.length;) // plain array values
-            buf[pos++] = val[i++];
+        : function writeStringBuffer_write(val, buf, pos) {
+            return buf.write(val, pos);
         };
 };
 
@@ -46,31 +50,42 @@ BufferWriter._configure = function () {
  */
 BufferWriter.prototype.bytes = function write_bytes_buffer(value) {
     if (util.isString(value))
-        value = util._Buffer_from(value, "base64");
+        value = util.Buffer.from(value, "base64");
     var len = value.length >>> 0;
     this.uint32(len);
-    if (len)
-        this._push(BufferWriter.writeBytesBuffer, len, value);
+    if (len) {
+        this._reserve(len);
+        this.buf.set(value, this.pos);
+        this.pos += len;
+    }
     return this;
 };
-
-function writeStringBuffer(val, buf, pos) {
-    if (val.length < 40) // plain js is faster for short strings (probably due to redundant assertions)
-        util.utf8.write(val, buf, pos);
-    else if (buf.utf8Write)
-        buf.utf8Write(val, pos);
-    else
-        buf.write(val, pos);
-}
 
 /**
  * @override
  */
 BufferWriter.prototype.string = function write_string_buffer(value) {
+    var n = value.length;
+    if (!n) {
+        this._reserve(1);
+        this.buf[this.pos++] = 0;
+        return this;
+    }
+    if (n < 0x80) {
+        this._reserve(n * 3 + 5); // worst case
+        var pos = this.pos,
+            buf = this.buf;
+        return this._delim(pos,
+            n < 40
+                ? util.utf8.write(value, buf, pos + 1)
+                : writeStringBuffer(value, buf, pos + 1)
+        );
+    }
     var len = util.Buffer.byteLength(value);
     this.uint32(len);
-    if (len)
-        this._push(writeStringBuffer, len, value);
+    this._reserve(len);
+    writeStringBuffer(value, this.buf, this.pos);
+    this.pos += len;
     return this;
 };
 
