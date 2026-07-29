@@ -33,7 +33,7 @@ WORKDIR /usr/src/app
 ENV NPM_VERSION=12.0.1
 RUN npm install -g npm@${NPM_VERSION}
 RUN npm install -g glob@13.0.6
-RUN npm install -g tar@7.5.19
+RUN npm install -g tar@7.5.22
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.npm to speed up subsequent builds.
