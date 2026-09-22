@@ -2,10 +2,10 @@
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
 
-#ARG NODE_VERSION=26.5.0
+#ARG NODE_VERSION=26.9.0
 
 #FROM node:${NODE_VERSION}-alpine3.24
-FROM node:26.5.0-alpine3.24 AS fnl_base_image
+FROM node:26.9.0-alpine3.24 AS fnl_base_image
 
 ## Update Alpine option
 #RUN apk update
@@ -30,7 +30,7 @@ ENV NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
 ENV NEW_RELIC_LOG=stdout
 
 WORKDIR /usr/src/app
-ENV NPM_VERSION=12.0.1
+ENV NPM_VERSION=12.0.2
 RUN npm install -g npm@${NPM_VERSION}
 RUN npm install -g glob@13.0.6
 RUN npm install -g tar@7.5.22
