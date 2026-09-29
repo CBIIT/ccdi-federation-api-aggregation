@@ -17,7 +17,7 @@ function buildPathRegex() {
     for (const path in parsedData.paths) {
       //console.debug("parsedDataPath: ", path);
       const openApiPathPattern = path.replace(/\{([^}]+)\}/g, '([^/]+)');
-      const regexPath = new RegExp('^\/api\/v[0-9]+' + openApiPathPattern + '$');
+      const regexPath = new RegExp('^\\/api\\/v[0-9]+' + openApiPathPattern + '\\/?$');
       regexPathArr.push(regexPath);
     }
   } catch (e) {
