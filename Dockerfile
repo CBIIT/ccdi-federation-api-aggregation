@@ -2,24 +2,19 @@
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
 
-#ARG NODE_VERSION=26.9.0
+#ARG NODE_VERSION=26.10.0
 
 #FROM node:${NODE_VERSION}-alpine3.24
-FROM node:26.9.0-alpine3.24 AS fnl_base_image
+FROM node:26.10.0-alpine3.24 AS fnl_base_image
 
-## Update Alpine option
-#RUN apk update
-#RUN apk upgrade
-
-## Update Alpine busybox
-RUN apk update && apk upgrade busybox
+## Update Alpine
+RUN apk update && apk upgrade --no-cache
 
 ## Update Alpine openssl
 # Dynamically pulls the latest, patched version (3.5.7-r0 or newer)
 # RUN apk update && apk upgrade --no-cache openssl libcrypto3 libssl3
 
 # RUN apk update && apk upgrade zlib
-RUN apk update && apk upgrade musl
 
 # ENV federation_apis=${federation_apis}
 
