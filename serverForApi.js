@@ -308,13 +308,6 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
     else {
       options.path += urlPath;
     } 
-    // If the path contains '/?' (a trailing slash immediately before query), remove that slash only.
-    // Otherwise, if there's no query string, remove a trailing slash from the path (preserve root '/').
-    if (options.path && options.path.includes('/?')) {
-      options.path = options.path.replace('/?', '?');
-    } else if (options.path && !options.path.includes('?') && options.path !== '/' && options.path.endsWith('/')) {
-      options.path = options.path.slice(0, -1);
-    }
     const req = proto.request(options, (res) => {
       //console.log("info", "statusCode: ", res.statusCode); // <======= Here's the status code
       //console.log("debug", "headers", JSON.stringify(res.headers));
@@ -393,6 +386,10 @@ function getresultHttp(optionsNode, urlPath, proto, addSourceInfo = false) {
 function aggregateRequests(urlPath) {
   let toAggregate = [];
   let addSourceToResponse = true;//add 'source' attribute to endpont responses
+  // If there's no query string, remove a trailing slash from the path if present (preserve root '/').
+  if (urlPath && !urlPath.includes('?') && urlPath !== '/' && urlPath.endsWith('/')) {
+    urlPath = urlPath.slice(0, -1);
+  }
   //collect Promises from getresultHttp
   for(var element of federatedOptions)
   {
