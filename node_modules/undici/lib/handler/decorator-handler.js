@@ -1,7 +1,6 @@
 'use strict'
 
 const assert = require('node:assert')
-const WrapHandler = require('./wrap-handler')
 
 /**
  * @deprecated
@@ -16,7 +15,7 @@ module.exports = class DecoratorHandler {
     if (typeof handler !== 'object' || handler === null) {
       throw new TypeError('handler must be an object')
     }
-    this.#handler = WrapHandler.wrap(handler)
+    this.#handler = handler
   }
 
   onRequestStart (...args) {
@@ -63,5 +62,11 @@ module.exports = class DecoratorHandler {
   /**
    * @deprecated
    */
-  onBodySent () {}
+  onBodySent (...args) {
+    return this.#handler.onBodySent?.(...args)
+  }
+
+  onRequestSent (...args) {
+    return this.#handler.onRequestSent?.(...args)
+  }
 }

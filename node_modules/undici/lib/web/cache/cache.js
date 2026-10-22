@@ -10,8 +10,6 @@ const { cloneResponse, fromInnerResponse, getResponseState } = require('../fetch
 const { Request, fromInnerRequest, getRequestState } = require('../fetch/request')
 const { fetching } = require('../fetch/index')
 const { urlIsHttpHttpsScheme, readAllBytes } = require('../fetch/util')
-const { createDeferredPromise } = require('../../util/promise')
-
 /**
  * @see https://w3c.github.io/ServiceWorker/#dfn-cache-batch-operation
  * @typedef {Object} CacheBatchOperation
@@ -43,7 +41,7 @@ class Cache {
   }
 
   async match (request, options = {}) {
-    webidl.brandCheck(this, Cache)
+    webidl.brandCheck(this, webidl.is.Cache)
 
     const prefix = 'Cache.match'
     webidl.argumentLengthCheck(arguments, 1, prefix)
@@ -61,7 +59,7 @@ class Cache {
   }
 
   async matchAll (request = undefined, options = {}) {
-    webidl.brandCheck(this, Cache)
+    webidl.brandCheck(this, webidl.is.Cache)
 
     const prefix = 'Cache.matchAll'
     if (request !== undefined) request = webidl.converters.RequestInfo(request)
@@ -71,7 +69,7 @@ class Cache {
   }
 
   async add (request) {
-    webidl.brandCheck(this, Cache)
+    webidl.brandCheck(this, webidl.is.Cache)
 
     const prefix = 'Cache.add'
     webidl.argumentLengthCheck(arguments, 1, prefix)
@@ -89,7 +87,7 @@ class Cache {
   }
 
   async addAll (requests) {
-    webidl.brandCheck(this, Cache)
+    webidl.brandCheck(this, webidl.is.Cache)
 
     const prefix = 'Cache.addAll'
     webidl.argumentLengthCheck(arguments, 1, prefix)
@@ -153,7 +151,7 @@ class Cache {
       requestList.push(r)
 
       // 5.6
-      const responsePromise = createDeferredPromise()
+      const responsePromise = Promise.withResolvers()
 
       // 5.7
       fetchControllers.push(fetching({
@@ -187,7 +185,10 @@ class Cache {
             }
           }
         },
-        processResponseEndOfBody (response) {
+        // Possible spec bug. If the body is never read, `processResponseEndOfBody` (which is attached to a TransformStream's flush hook)
+        // never runs, so this would hang. This hook, on the other hand, always reads the body.
+        // https://github.com/nodejs/undici/issues/5615
+        processResponseConsumeBody (response) {
           // 1.
           if (response.aborted) {
             responsePromise.reject(new DOMException('aborted', 'AbortError'))
@@ -231,7 +232,7 @@ class Cache {
     }
 
     // 7.5
-    const cacheJobPromise = createDeferredPromise()
+    const cacheJobPromise = Promise.withResolvers()
 
     // 7.6.1
     let errorData = null
@@ -259,7 +260,7 @@ class Cache {
   }
 
   async put (request, response) {
-    webidl.brandCheck(this, Cache)
+    webidl.brandCheck(this, webidl.is.Cache)
 
     const prefix = 'Cache.put'
     webidl.argumentLengthCheck(arguments, 2, prefix)
@@ -325,7 +326,7 @@ class Cache {
     const clonedResponse = cloneResponse(innerResponse)
 
     // 10.
-    const bodyReadPromise = createDeferredPromise()
+    const bodyReadPromise = Promise.withResolvers()
 
     // 11.
     if (innerResponse.body != null) {
@@ -364,7 +365,7 @@ class Cache {
     }
 
     // 19.1
-    const cacheJobPromise = createDeferredPromise()
+    const cacheJobPromise = Promise.withResolvers()
 
     // 19.2.1
     let errorData = null
@@ -390,7 +391,7 @@ class Cache {
   }
 
   async delete (request, options = {}) {
-    webidl.brandCheck(this, Cache)
+    webidl.brandCheck(this, webidl.is.Cache)
 
     const prefix = 'Cache.delete'
     webidl.argumentLengthCheck(arguments, 1, prefix)
@@ -427,7 +428,7 @@ class Cache {
 
     operations.push(operation)
 
-    const cacheJobPromise = createDeferredPromise()
+    const cacheJobPromise = Promise.withResolvers()
 
     let errorData = null
     let requestResponses
@@ -456,7 +457,7 @@ class Cache {
    * @returns {Promise<readonly Request[]>}
    */
   async keys (request = undefined, options = {}) {
-    webidl.brandCheck(this, Cache)
+    webidl.brandCheck(this, webidl.is.Cache)
 
     const prefix = 'Cache.keys'
 
@@ -483,7 +484,7 @@ class Cache {
     }
 
     // 4.
-    const promise = createDeferredPromise()
+    const promise = Promise.withResolvers()
 
     // 5.
     // 5.1
@@ -805,6 +806,12 @@ class Cache {
 
     // 6.
     return Object.freeze(responseList)
+  }
+
+  static {
+    webidl.is.Cache = (arg) => {
+      return arg != null && typeof arg === 'object' && #relevantRequestResponseList in arg
+    }
   }
 }
 

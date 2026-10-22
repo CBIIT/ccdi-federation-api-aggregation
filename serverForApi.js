@@ -13,6 +13,7 @@ const strCpiRequest = "subject-mapping";
 const strSubjectRequest = "subject";
 const strSubjectDiagnosisRequest = "subject-diagnosis";
 const pkg = require('./package.json');
+const tracer = require('dd-trace').init();
 
 //certificates are not used, defined by setting rejectUnauthorized
 // const caTreehouse = [fs.readFileSync("./treehouse-cer.pem")];

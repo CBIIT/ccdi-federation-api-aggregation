@@ -107,28 +107,6 @@ const headerNameLowerCasedRecord = {}
 // Note: object prototypes should not be able to be referenced. e.g. `Object#hasOwnProperty`.
 Object.setPrototypeOf(headerNameLowerCasedRecord, null)
 
-/**
- * @type {Record<Lowercase<typeof wellknownHeaderNames[number]>, Buffer>}
- */
-const wellknownHeaderNameBuffers = {}
-
-// Note: object prototypes should not be able to be referenced. e.g. `Object#hasOwnProperty`.
-Object.setPrototypeOf(wellknownHeaderNameBuffers, null)
-
-/**
- * @param {string} header Lowercased header
- * @returns {Buffer}
- */
-function getHeaderNameAsBuffer (header) {
-  let buffer = wellknownHeaderNameBuffers[header]
-
-  if (buffer === undefined) {
-    buffer = Buffer.from(header)
-  }
-
-  return buffer
-}
-
 for (let i = 0; i < wellknownHeaderNames.length; ++i) {
   const key = wellknownHeaderNames[i]
   const lowerCasedKey = key.toLowerCase()
@@ -136,8 +114,18 @@ for (let i = 0; i < wellknownHeaderNames.length; ++i) {
     lowerCasedKey
 }
 
+/**
+ * Default WebSocket receive limits (see `webSocket` in Client.md). Used by
+ * DispatcherBase#webSocketOptions and by the WebSocket parser when the
+ * dispatcher doesn't provide a value, so a dispatcher without
+ * `webSocketOptions` (a custom one, or a wrapper) doesn't remove the limits.
+ */
+const defaultWebSocketMaxFragments = 131072
+const defaultWebSocketMaxPayloadSize = 128 * 1024 * 1024 // 128 MB
+
 module.exports = {
   wellknownHeaderNames,
   headerNameLowerCasedRecord,
-  getHeaderNameAsBuffer
+  defaultWebSocketMaxFragments,
+  defaultWebSocketMaxPayloadSize
 }
