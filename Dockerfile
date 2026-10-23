@@ -25,7 +25,7 @@ ENV NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
 ENV NEW_RELIC_LOG=stdout
 
 WORKDIR /usr/src/app
-ENV NPM_VERSION=12.0.2
+ENV NPM_VERSION=12.2.1
 RUN npm install -g npm@${NPM_VERSION}
 RUN npm install -g glob@13.0.6
 RUN npm install -g tar@7.5.22
