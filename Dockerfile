@@ -27,8 +27,9 @@ ENV NEW_RELIC_LOG=stdout
 WORKDIR /usr/src/app
 ENV NPM_VERSION=12.2.1
 RUN npm install -g npm@${NPM_VERSION}
-RUN npm install -g glob@13.0.6
+RUN npm install -g glob@14.0.3
 RUN npm install -g tar@7.5.22
+RUN npm install -g minimatch@11.0.4
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.npm to speed up subsequent builds.
