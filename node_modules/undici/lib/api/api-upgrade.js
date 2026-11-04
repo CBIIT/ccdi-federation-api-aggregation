@@ -34,40 +34,51 @@ class UpgradeHandler extends AsyncResource {
     addSignal(this, signal)
   }
 
-  onConnect (abort, context) {
+  onRequestStart (controller, context) {
     if (this.reason) {
-      abort(this.reason)
+      controller.abort(this.reason)
       return
     }
 
     assert(this.callback)
 
-    this.abort = abort
-    this.context = null
+    this.abort = (reason) => controller.abort(reason)
+    this.context = context
   }
 
-  onHeaders () {
+  onResponseStart () {
     throw new SocketError('bad upgrade', null)
   }
 
-  onUpgrade (statusCode, rawHeaders, socket) {
-    assert(socket[kHTTP2Stream] === true ? statusCode === 200 : statusCode === 101)
+  onRequestUpgrade (controller, statusCode, headers, socket) {
+    const expectedStatusCode = socket[kHTTP2Stream] === true ? 200 : 101
+
+    if (statusCode !== expectedStatusCode) {
+      const socketInfo = socket[kHTTP2Stream] === true ? null : util.getSocketInfo(socket)
+      controller.abort(new SocketError('bad upgrade', socketInfo))
+      return
+    }
 
     const { callback, opaque, context } = this
 
     removeSignal(this)
 
     this.callback = null
-    const headers = this.responseHeaders === 'raw' ? util.parseRawHeaders(rawHeaders) : util.parseHeaders(rawHeaders)
+
+    const rawHeaders = controller?.rawHeaders
+    const responseHeaders = this.responseHeaders === 'raw'
+      ? util.parseRawHeaders(rawHeaders)
+      : headers
+
     this.runInAsyncScope(callback, null, null, {
-      headers,
+      headers: responseHeaders,
       socket,
       opaque,
       context
     })
   }
 
-  onError (err) {
+  onResponseError (_controller, err) {
     const { callback, opaque } = this
 
     removeSignal(this)
@@ -97,7 +108,6 @@ function upgrade (opts, callback) {
       method: opts.method || 'GET',
       upgrade: opts.protocol || 'Websocket'
     }
-
     this.dispatch(upgradeOpts, upgradeHandler)
   } catch (err) {
     if (typeof callback !== 'function') {

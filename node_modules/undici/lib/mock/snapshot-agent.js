@@ -3,8 +3,8 @@
 const Agent = require('../dispatcher/agent')
 const MockAgent = require('./mock-agent')
 const { SnapshotRecorder } = require('./snapshot-recorder')
-const WrapHandler = require('../handler/wrap-handler')
 const { InvalidArgumentError, UndiciError } = require('../core/errors')
+const util = require('../core/util')
 const { validateSnapshotMode } = require('./snapshot-utils')
 
 const kSnapshotRecorder = Symbol('kSnapshotRecorder')
@@ -55,7 +55,9 @@ class SnapshotAgent extends MockAgent {
       ignoreHeaders: opts.ignoreHeaders,
       excludeHeaders: opts.excludeHeaders,
       matchBody: opts.matchBody,
+      normalizeBody: opts.normalizeBody,
       matchQuery: opts.matchQuery,
+      normalizeQuery: opts.normalizeQuery,
       caseSensitive: opts.caseSensitive,
       shouldRecord: opts.shouldRecord,
       shouldPlayback: opts.shouldPlayback,
@@ -79,7 +81,6 @@ class SnapshotAgent extends MockAgent {
   }
 
   dispatch (opts, handler) {
-    handler = WrapHandler.wrap(handler)
     const mode = this[kSnapshotMode]
 
     // Check if URL should be excluded (pass through without mocking/recording)
@@ -107,8 +108,8 @@ class SnapshotAgent extends MockAgent {
       } else {
         // Playback mode but no snapshot found
         const error = new UndiciError(`No snapshot found for ${opts.method || 'GET'} ${opts.path}`)
-        if (handler.onError) {
-          handler.onError(error)
+        if (handler.onResponseError) {
+          handler.onResponseError(null, error)
           return
         }
         throw error
@@ -173,6 +174,10 @@ class SnapshotAgent extends MockAgent {
         })
           .then(() => handler.onResponseEnd(controller, trailers))
           .catch((error) => handler.onResponseError(controller, error))
+      },
+
+      onResponseError (controller, error) {
+        return handler.onResponseError(controller, error)
       }
     }
 
@@ -192,7 +197,12 @@ class SnapshotAgent extends MockAgent {
     try {
       const { response } = snapshot
 
+      const rawHeaders = response.headers ? util.toRawHeaders(response.headers) : []
+      const rawTrailers = response.trailers ? util.toRawHeaders(response.trailers) : []
+
       const controller = {
+        rawHeaders,
+        rawTrailers,
         pause () { },
         resume () { },
         abort (reason) {
@@ -206,7 +216,7 @@ class SnapshotAgent extends MockAgent {
 
       handler.onRequestStart(controller)
 
-      handler.onResponseStart(controller, response.statusCode, response.headers)
+      handler.onResponseStart(controller, response.statusCode, response.headers, response.statusMessage)
 
       // Body is always stored as base64 string
       const body = Buffer.from(response.body, 'base64')
@@ -214,7 +224,7 @@ class SnapshotAgent extends MockAgent {
 
       handler.onResponseEnd(controller, response.trailers)
     } catch (error) {
-      handler.onError?.(error)
+      handler.onResponseError?.(null, error)
     }
   }
 
@@ -344,7 +354,15 @@ class SnapshotAgent extends MockAgent {
    * @returns {Promise<void>}
    */
   async close () {
-    await this[kSnapshotRecorder].close()
+    // In playback mode the recorder must not persist to disk. findSnapshot()
+    // mutates each matched snapshot's callCount, so saving on close would
+    // rewrite the snapshot file even though nothing new was recorded. Only
+    // record/update modes should write snapshots; playback just cleans up.
+    if (this[kSnapshotMode] === 'playback') {
+      this[kSnapshotRecorder].destroy()
+    } else {
+      await this[kSnapshotRecorder].close()
+    }
     await this[kRealAgent]?.close()
     await super.close()
   }

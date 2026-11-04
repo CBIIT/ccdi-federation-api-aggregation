@@ -2,10 +2,10 @@
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
 
-#ARG NODE_VERSION=26.12.0
+#ARG NODE_VERSION=26.13.0
 
 #FROM node:${NODE_VERSION}-alpine3.24
-FROM node:26.12.0-alpine3.24 AS fnl_base_image
+FROM node:26.13.0-alpine3.24 AS fnl_base_image
 
 ## Update Alpine
 RUN apk update && apk upgrade --no-cache
@@ -25,10 +25,11 @@ ENV NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
 ENV NEW_RELIC_LOG=stdout
 
 WORKDIR /usr/src/app
-ENV NPM_VERSION=12.0.2
+ENV NPM_VERSION=12.2.1
 RUN npm install -g npm@${NPM_VERSION}
-RUN npm install -g glob@13.0.6
+RUN npm install -g glob@14.0.3
 RUN npm install -g tar@7.5.22
+RUN npm install -g minimatch@11.0.4
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.npm to speed up subsequent builds.
